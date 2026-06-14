@@ -1,0 +1,32 @@
+[versions]
+kotlin = "2.4.0"
+coroutines = "1.11.0"
+kotlinx-io = "0.9.0"
+exposed = "1.3.0"
+aws = "1.6.91"
+testcontainers = "2.0.5"
+junit = "6.1.0"
+postgresql = "42.7.11"
+spotless = "8.6.0"
+ktlint = "1.8.0"
+dokka = "2.2.0"
+
+[libraries]
+kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+spotless-gradle-plugin = { module = "com.diffplug.spotless:spotless-plugin-gradle", version.ref = "spotless" }
+dokka-gradle-plugin = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka" }
+
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
+kotlinx-io-core = { module = "org.jetbrains.kotlinx:kotlinx-io-core", version.ref = "kotlinx-io" }
+exposed-core = { module = "org.jetbrains.exposed:exposed-core", version.ref = "exposed" }
+exposed-jdbc = { module = "org.jetbrains.exposed:exposed-jdbc", version.ref = "exposed" }
+aws-s3 = { module = "aws.sdk.kotlin:s3", version.ref = "aws" }
+
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
+junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
+testcontainers-junit = { module = "org.testcontainers:testcontainers-junit-jupiter", version.ref = "testcontainers" }
+testcontainers-postgresql = { module = "org.testcontainers:testcontainers-postgresql", version.ref = "testcontainers" }
+testcontainers-minio = { module = "org.testcontainers:testcontainers-minio", version.ref = "testcontainers" }
+postgresql-driver = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
