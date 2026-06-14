@@ -54,6 +54,9 @@ public class AktiveStorage(
         name: String,
     ): List<Attachment> = metadata.findAttachments(record, name)
 
+    /** 添付に対応する Blob を引く。 */
+    public suspend fun blobOf(attachment: Attachment): Blob? = metadata.findBlob(attachment.blobId)
+
     /**
      * 添付を外す。purgeBlob=true で Blob 行と実体も削除する。
      * 注: MVP は参照カウントしない（共有 Blob の安全な回収はフェーズ2）。
