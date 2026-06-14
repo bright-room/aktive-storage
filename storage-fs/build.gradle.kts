@@ -1,5 +1,6 @@
 plugins {
     id("aktive.kotlin-library")
+    id("aktive.published")
 }
 
 dependencies {
