@@ -2,6 +2,8 @@ package net.brightroom.aktivestorage
 
 import java.util.UUID
 import kotlin.time.Clock
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 public class AktiveStorage(
     private val service: StorageService,
@@ -65,5 +67,25 @@ public class AktiveStorage(
         val blob = metadata.findBlob(attachment.blobId) ?: return
         metadata.deleteBlob(blob.id)
         service.delete(blob.key)
+    }
+
+    /** 配信用の署名参照トークンを発行する。 */
+    public fun signedReference(
+        blob: Blob,
+        ttl: Duration,
+    ): String = signer.sign(blob.id, clock.now() + ttl)
+
+    /**
+     * トークンを検証し配信方法を返す。
+     * presigned 対応サービスは Redirect、非対応(fs)は Proxy へ自動フォールバック。
+     */
+    public suspend fun resolveForDelivery(
+        token: String,
+        redirectTtl: Duration = 30.seconds,
+    ): Delivery? {
+        val blobId = signer.verify(token) ?: return null
+        val blob = metadata.findBlob(blobId) ?: return null
+        val url = service.presignedGetUrl(blob.key, redirectTtl)
+        return if (url != null) Delivery.Redirect(url) else Delivery.Proxy(blob, service.get(blob.key))
     }
 }
