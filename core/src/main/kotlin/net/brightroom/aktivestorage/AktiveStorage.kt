@@ -46,4 +46,24 @@ public class AktiveStorage(
             spooled.cleanup()
         }
     }
+
+    public suspend fun attachments(
+        record: RecordRef,
+        name: String,
+    ): List<Attachment> = metadata.findAttachments(record, name)
+
+    /**
+     * 添付を外す。purgeBlob=true で Blob 行と実体も削除する。
+     * 注: MVP は参照カウントしない（共有 Blob の安全な回収はフェーズ2）。
+     */
+    public suspend fun detach(
+        attachment: Attachment,
+        purgeBlob: Boolean = true,
+    ) {
+        metadata.deleteAttachment(attachment.id)
+        if (!purgeBlob) return
+        val blob = metadata.findBlob(attachment.blobId) ?: return
+        metadata.deleteBlob(blob.id)
+        service.delete(blob.key)
+    }
 }
