@@ -16,3 +16,4 @@ rootProject.name = "aktive-storage"
 
 include("core")
 include("storage-fs")
+include("storage-s3")
