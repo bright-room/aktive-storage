@@ -68,17 +68,19 @@ include("bom")
 
 nmcpSettings {
     centralPortal {
-        username = providers.environmentVariable("SONATYPE_CENTRAL_USERNAME")
-        password = providers.environmentVariable("SONATYPE_CENTRAL_PASSWORD")
+        username = System.getenv("SONATYPE_CENTRAL_USERNAME")
+        password = System.getenv("SONATYPE_CENTRAL_PASSWORD")
         publishingType = "AUTOMATIC"
     }
 }
 ```
 
+> **重要（config-cache）:** 認証情報は `System.getenv(...)` で読むこと。`providers.environmentVariable(...)` を使うと nmcp が `beforeProject` ライフサイクルコールバックに `ValueSourceProvider` を載せ、config-cache 直列化に失敗して**全 Gradle ビルドが壊れる**。nmcp 公式 Quickstart も String 代入で示している。
+
 - [ ] **Step 2: プラグイン解決と publish タスク生成を確認**
 
-Run: `./gradlew tasks --group=nmcp`
-Expected: タスク一覧に `publishAggregationToCentralPortal` が含まれる（プラグインが解決・適用され、全プロジェクトに nmcp が適用された証跡）。`integration-tests` 等 publications を持たないモジュールはアップロード対象外（集約に何も寄与しない）。
+Run: `./gradlew tasks --all | grep publishAggregationToCentralPortal`
+Expected: `publishAggregationToCentralPortal - Publishes the aggregation to the Central Releases repository.` が出力される。あわせて `./gradlew tasks` 自体が config-cache 有効のまま BUILD SUCCESSFUL になること（`Configuration cache entry stored.`）。`integration-tests` 等 publications を持たないモジュールはアップロード対象外（集約に何も寄与しない）。
 
 - [ ] **Step 3: 既存 Spotless が通ることを確認**
 
