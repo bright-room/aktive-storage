@@ -113,6 +113,8 @@ Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
     steps:
 ```
 
+あわせて **`ci.yml` の `paths-ignore`（`docs/**` / `**.md`）を撤廃**する（trigger を `on: { pull_request:, push: { branches: [main] } }` に）。docs/md のみのコミットに CI 実行が作られないとゲートが誤ブロックするため、全コミットに CI 実行を保証してゲートの不変条件を総当たりにする。
+
 続けて、validate ジョブ末尾の現在の最後のステップ:
 ```yaml
       - name: Check tag does not already exist

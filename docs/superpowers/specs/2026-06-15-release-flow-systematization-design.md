@@ -45,6 +45,7 @@ fi
 
 - `github.sha` は dispatch 実行時の対象 ref（既定ブランチ HEAD、または UI で選んだ ref）の SHA。
 - 既存の version 形式チェック（`^v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$`）とタグ重複チェックはそのまま残す。
+- **`ci.yml` の `paths-ignore`（`docs/**` / `**.md`）を撤廃する**。これがあると docs/md のみのコミットには CI 実行が作られず、そのコミットを先頭にリリースしようとするとゲートが「実行なし」で誤ブロックする。全コミットに CI 実行を保証することで、ゲートの「対象コミットの CI 緑」という不変条件を総当たりにする（代償: docs 変更でも毎回フル CI が回る）。
 - `REPO`/`SHA` は `env:` 経由で渡す（`github.repository` / `github.sha`）。この CI 状態確認は GITHUB_TOKEN の `actions: read` を要するため、validate ジョブに `permissions: { actions: read }` を付与する（dispatch の top-level `permissions: {}` は据え置き、ジョブ単位で最小付与）。
 
 ### 2. パッケージング検証を CI に統合（`verify-packaging.yml` を廃止）
