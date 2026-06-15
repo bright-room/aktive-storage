@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.testcontainers.containers.MinIOContainer
 import kotlin.test.assertContentEquals
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.minutes
@@ -62,7 +63,8 @@ class S3StorageServiceIT {
             val s = service()
             s.put("k1", ContentSource.ofBytes("f", "text/plain", "hello".encodeToByteArray()), meta("hello"))
             assertTrue(s.exists("k1"))
-            assertContentEquals("hello".encodeToByteArray(), s.get("k1").buffered().readByteArray())
+            val bytes = s.get("k1").buffered().use { it.readByteArray() }
+            assertContentEquals("hello".encodeToByteArray(), bytes)
             s.delete("k1")
             assertFalse(s.exists("k1"))
         }
@@ -81,6 +83,25 @@ class S3StorageServiceIT {
             val readBack = s.get("big").buffered().use { it.readByteArray() }
             assertContentEquals(payload, readBack)
             s.delete("big")
+        }
+
+    @Test
+    fun `get streams via a temp file that is deleted on close`() =
+        runBlocking {
+            val s = service()
+            s.put("k3", ContentSource.ofBytes("f", "text/plain", "stream-me".encodeToByteArray()), meta("stream-me"))
+
+            val tmpDir = java.io.File(System.getProperty("java.io.tmpdir"))
+
+            fun spoolFiles() = tmpDir.listFiles { _, n -> n.startsWith("aktive-s3-") }?.size ?: 0
+            val before = spoolFiles()
+
+            val source = s.get("k3")
+            val bytes = source.buffered().use { it.readByteArray() }
+            assertContentEquals("stream-me".encodeToByteArray(), bytes)
+
+            assertEquals(before, spoolFiles())
+            s.delete("k3")
         }
 
     @Test
