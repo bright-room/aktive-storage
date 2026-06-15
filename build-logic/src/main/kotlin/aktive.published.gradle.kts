@@ -45,7 +45,11 @@ publishing {
                         url.set("https://bright-room.net")
                     }
                 }
-                scm { url.set("https://github.com/bright-room/aktive-storage") }
+                scm {
+                    connection.set("scm:git:git://github.com/bright-room/aktive-storage.git")
+                    developerConnection.set("scm:git:git@github.com:bright-room/aktive-storage.git")
+                    url.set("https://github.com/bright-room/aktive-storage")
+                }
             }
         }
     }
