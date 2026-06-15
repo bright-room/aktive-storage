@@ -35,7 +35,7 @@ public class AktiveStorage(
             metadata.insertBlob(blob)
             try {
                 service.put(key, spooled, ObjectMetadata(blob.contentType, blob.byteSize, blob.checksum))
-            } catch (e: Throwable) {
+            } catch (e: Exception) {
                 metadata.deleteBlob(blob.id)
                 throw e
             }
