@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.testcontainers.containers.MinIOContainer
 import kotlin.test.assertContentEquals
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.minutes
@@ -62,9 +63,46 @@ class S3StorageServiceIT {
             val s = service()
             s.put("k1", ContentSource.ofBytes("f", "text/plain", "hello".encodeToByteArray()), meta("hello"))
             assertTrue(s.exists("k1"))
-            assertContentEquals("hello".encodeToByteArray(), s.get("k1").buffered().readByteArray())
+            val bytes = s.get("k1").buffered().use { it.readByteArray() }
+            assertContentEquals("hello".encodeToByteArray(), bytes)
             s.delete("k1")
             assertFalse(s.exists("k1"))
+        }
+
+    @Test
+    fun `put and get stream a large object without corruption`() =
+        runBlocking {
+            val s = service()
+            val size = 16 * 1024 * 1024 // 16 MiB
+            val payload = ByteArray(size) { (it % 251).toByte() }
+            s.put(
+                "big",
+                ContentSource.ofBytes("big.bin", "application/octet-stream", payload),
+                ObjectMetadata("application/octet-stream", size.toLong(), "chk"),
+            )
+            val readBack = s.get("big").buffered().use { it.readByteArray() }
+            assertContentEquals(payload, readBack)
+            s.delete("big")
+        }
+
+    @Test
+    fun `get streams via a temp file that is deleted on close`() =
+        runBlocking {
+            val s = service()
+            s.put("k3", ContentSource.ofBytes("f", "text/plain", "stream-me".encodeToByteArray()), meta("stream-me"))
+
+            val tmpDir = java.io.File(System.getProperty("java.io.tmpdir"))
+
+            fun spoolFiles() = tmpDir.listFiles { _, n -> n.startsWith("aktive-s3-") }?.map { it.name }?.toSet() ?: emptySet()
+            val before = spoolFiles()
+
+            val source = s.get("k3")
+            val bytes = source.buffered().use { it.readByteArray() }
+            assertContentEquals("stream-me".encodeToByteArray(), bytes)
+
+            // Compare the file *set*, not a count, so unrelated temp files can't perturb the result.
+            assertEquals(emptySet(), spoolFiles() - before, "get() must leave no temp file behind after close")
+            s.delete("k3")
         }
 
     @Test

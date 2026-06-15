@@ -7,16 +7,17 @@ import aws.sdk.kotlin.services.s3.model.GetObjectRequest
 import aws.sdk.kotlin.services.s3.model.NotFound
 import aws.sdk.kotlin.services.s3.presigners.presignGetObject
 import aws.sdk.kotlin.services.s3.putObject
-import aws.smithy.kotlin.runtime.content.ByteStream
-import aws.smithy.kotlin.runtime.content.toByteArray
-import kotlinx.io.Buffer
+import aws.smithy.kotlin.runtime.content.writeToFile
 import kotlinx.io.RawSource
-import kotlinx.io.buffered
-import kotlinx.io.readByteArray
+import kotlinx.io.files.Path
+import kotlinx.io.files.SystemFileSystem
+import kotlinx.io.files.SystemTemporaryDirectory
 import net.brightroom.aktivestorage.ContentSource
 import net.brightroom.aktivestorage.ObjectMetadata
 import net.brightroom.aktivestorage.PresignedUrl
 import net.brightroom.aktivestorage.StorageService
+import java.io.File
+import java.util.UUID
 import kotlin.time.Duration
 
 /** S3 / S3互換アダプタ（AWS SDK for Kotlin, suspend ネイティブ）。 */
@@ -30,25 +31,32 @@ public class S3StorageService(
         content: ContentSource,
         meta: ObjectMetadata,
     ) {
-        val bytes = content.open().buffered().use { it.readByteArray() }
         client.putObject {
             this.bucket = this@S3StorageService.bucket
             this.key = key
             this.contentType = meta.contentType
             this.contentLength = meta.byteSize
-            this.body = ByteStream.fromBytes(bytes)
+            this.body = ContentSourceByteStream(content, meta.byteSize)
         }
     }
 
     override suspend fun get(key: String): RawSource {
-        val bytes =
+        val tempFile = Path(SystemTemporaryDirectory, "aktive-s3-${UUID.randomUUID()}.tmp")
+        try {
             client.getObject(
                 GetObjectRequest {
                     this.bucket = this@S3StorageService.bucket
                     this.key = key
                 },
-            ) { resp -> resp.body?.toByteArray() ?: error("S3 returned no body for key=$key") }
-        return Buffer().also { it.write(bytes) }
+            ) { resp ->
+                val body = resp.body ?: error("S3 returned no body for key=$key")
+                body.writeToFile(File(tempFile.toString()))
+            }
+        } catch (e: Throwable) {
+            SystemFileSystem.delete(tempFile, mustExist = false)
+            throw e
+        }
+        return DeletingFileSource(tempFile)
     }
 
     override suspend fun exists(key: String): Boolean =

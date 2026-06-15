@@ -93,4 +93,27 @@ class EndToEndIT {
             val fetched = conn.inputStream.use { it.readBytes() }
             assertContentEquals(payload, fetched)
         }
+
+    @Test
+    fun `attach and serve a large payload end to end`() =
+        runBlocking {
+            val size = 16 * 1024 * 1024 // 16 MiB through spool -> S3 put -> presigned GET
+            val payload = ByteArray(size) { (it % 251).toByte() }
+            val record = RecordRef("User", "big")
+
+            val att = storage.attach(record, "dump", ContentSource.ofBytes("dump.bin", "application/octet-stream", payload))
+            val blob = storage.blobOf(att)!!
+            val token = storage.signedReference(blob, 5.minutes)
+            val redirect = assertIs<Delivery.Redirect>(storage.resolveForDelivery(token))
+
+            val conn =
+                java.net.URI
+                    .create(redirect.url.value)
+                    .toURL()
+                    .openConnection() as java.net.HttpURLConnection
+            conn.connectTimeout = 5_000
+            conn.readTimeout = 30_000
+            val fetched = conn.inputStream.use { it.readBytes() }
+            assertContentEquals(payload, fetched)
+        }
 }
