@@ -7,7 +7,7 @@ plugins {
 dependencies {
     api(project(":core"))
     implementation(libs.exposed.core)
-    implementation(libs.exposed.jdbc)
+    api(libs.exposed.jdbc)
     implementation(libs.kotlinx.coroutines.core)
 
     testImplementation(libs.testcontainers.junit)

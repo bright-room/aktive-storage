@@ -7,8 +7,6 @@ dependencies {
     testImplementation(project(":core"))
     testImplementation(project(":storage-s3"))
     testImplementation(project(":metadata-exposed-jdbc"))
-    testImplementation(libs.aws.s3)
-    testImplementation(libs.exposed.jdbc)
     testImplementation(libs.testcontainers.junit)
     testImplementation(libs.testcontainers.minio)
     testImplementation(libs.testcontainers.postgresql)

@@ -6,7 +6,7 @@ plugins {
 
 dependencies {
     api(project(":core"))
-    implementation(libs.aws.s3)
+    api(libs.aws.s3)
 
     testImplementation(libs.testcontainers.junit)
     testImplementation(libs.testcontainers.minio)
