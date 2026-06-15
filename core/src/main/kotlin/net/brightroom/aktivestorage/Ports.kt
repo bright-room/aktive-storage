@@ -14,6 +14,7 @@ public interface StorageService {
         meta: ObjectMetadata,
     )
 
+    /** 実体を読み出す。返した [RawSource] は呼び出し側が close すること（S3 は temp ファイル裏付けで、close 時に削除する）。 */
     public suspend fun get(key: String): RawSource
 
     public suspend fun exists(key: String): Boolean
