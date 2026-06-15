@@ -7,17 +7,7 @@
   "prConcurrentLimit": 0,
   "prHourlyLimit": 0,
   "separateMinorPatch": true,
-  "terraform": {
-    "enabled": true
-  },
-  "lockFileMaintenance": {
-    "enabled": true,
-    "schedule": ["before 9am on saturday"]
-  },
   "minimumReleaseAge": "7 days",
   "automerge": true,
-  "major": {
-    "minimumReleaseAge": "14 days",
-    "automerge": false
-  }
+  "major": { "minimumReleaseAge": "14 days", "automerge": false }
 }
