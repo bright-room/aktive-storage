@@ -73,11 +73,14 @@ class S3StorageServiceIT {
             val s = service()
             s.put("k2", ContentSource.ofBytes("f", "text/plain", "data".encodeToByteArray()), meta("data"))
             val url = s.presignedGetUrl("k2", 5.minutes)
-            val fetched =
+            val conn =
                 java.net.URI
                     .create(url.value)
                     .toURL()
-                    .readBytes()
+                    .openConnection() as java.net.HttpURLConnection
+            conn.connectTimeout = 5_000
+            conn.readTimeout = 5_000
+            val fetched = conn.inputStream.use { it.readBytes() }
             assertContentEquals("data".encodeToByteArray(), fetched)
         }
 }

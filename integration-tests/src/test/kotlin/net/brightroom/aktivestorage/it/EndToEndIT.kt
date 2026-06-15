@@ -83,11 +83,14 @@ class EndToEndIT {
             val token = storage.signedReference(blob, 5.minutes)
             val delivery = storage.resolveForDelivery(token)
             val redirect = assertIs<Delivery.Redirect>(delivery)
-            val fetched =
+            val conn =
                 java.net.URI
                     .create(redirect.url.value)
                     .toURL()
-                    .readBytes()
+                    .openConnection() as java.net.HttpURLConnection
+            conn.connectTimeout = 5_000
+            conn.readTimeout = 5_000
+            val fetched = conn.inputStream.use { it.readBytes() }
             assertContentEquals(payload, fetched)
         }
 }

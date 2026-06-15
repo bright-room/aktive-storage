@@ -8,6 +8,7 @@ import net.brightroom.aktivestorage.fakes.InMemoryStorageService
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertIs
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.time.Duration.Companion.minutes
 
@@ -26,7 +27,7 @@ class DeliveryTest {
             val m = InMemoryMetadataStore()
             val st = sut(s, m)
             val att = st.attach(record, "avatar", ContentSource.ofBytes("a", "text/plain", "x".encodeToByteArray()))
-            val token = st.signedReference(m.findBlob(att.blobId)!!, 5.minutes)
+            val token = st.signedReference(assertNotNull(m.findBlob(att.blobId)), 5.minutes)
             assertIs<Delivery.Redirect>(st.resolveForDelivery(token))
         }
 
@@ -37,10 +38,12 @@ class DeliveryTest {
             val m = InMemoryMetadataStore()
             val st = sut(s, m)
             val att = st.attach(record, "avatar", ContentSource.ofBytes("a", "text/plain", "data".encodeToByteArray()))
-            val token = st.signedReference(m.findBlob(att.blobId)!!, 5.minutes)
+            val token = st.signedReference(assertNotNull(m.findBlob(att.blobId)), 5.minutes)
             val delivery = st.resolveForDelivery(token)
             val proxy = assertIs<Delivery.Proxy>(delivery)
-            assertContentEquals("data".encodeToByteArray(), proxy.stream.buffered().readByteArray())
+            proxy.stream.use {
+                assertContentEquals("data".encodeToByteArray(), it.buffered().readByteArray())
+            }
         }
 
     @Test
