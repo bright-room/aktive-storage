@@ -92,7 +92,7 @@ aktive-storage follows semantic versioning with pre-1.0 semantics:
 - **`0.x` does not guarantee API stability.** A minor bump (`0.MINOR.0`) may include breaking changes; a patch bump (`0.0.PATCH`) is backward-compatible fixes only. The public API stabilizes at `1.0`.
 - The public ABI is guarded in CI by [binary-compatibility-validator](https://github.com/Kotlin/binary-compatibility-validator) to catch *unintended* breaks. Intentional changes regenerate the `api/*.api` dumps (`./gradlew apiDump`) and bump the minor version.
 
-Releases are published to Maven Central on tag push.
+Releases are published to Maven Central on tag push — see [Releasing](docs/RELEASING.md).
 
 ## License
 
