@@ -30,13 +30,12 @@ public class S3StorageService(
         content: ContentSource,
         meta: ObjectMetadata,
     ) {
-        val bytes = content.open().buffered().use { it.readByteArray() }
         client.putObject {
             this.bucket = this@S3StorageService.bucket
             this.key = key
             this.contentType = meta.contentType
             this.contentLength = meta.byteSize
-            this.body = ByteStream.fromBytes(bytes)
+            this.body = ContentSourceByteStream(content, meta.byteSize)
         }
     }
 

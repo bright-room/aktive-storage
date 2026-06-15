@@ -68,6 +68,22 @@ class S3StorageServiceIT {
         }
 
     @Test
+    fun `put and get stream a large object without corruption`() =
+        runBlocking {
+            val s = service()
+            val size = 16 * 1024 * 1024 // 16 MiB
+            val payload = ByteArray(size) { (it % 251).toByte() }
+            s.put(
+                "big",
+                ContentSource.ofBytes("big.bin", "application/octet-stream", payload),
+                ObjectMetadata("application/octet-stream", size.toLong(), "chk"),
+            )
+            val readBack = s.get("big").buffered().use { it.readByteArray() }
+            assertContentEquals(payload, readBack)
+            s.delete("big")
+        }
+
+    @Test
     fun `presignedGetUrl returns a fetchable url`() =
         runBlocking {
             val s = service()
