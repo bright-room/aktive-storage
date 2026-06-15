@@ -29,17 +29,22 @@ internal fun spool(content: ContentSource): SpooledContent {
     val digest = MessageDigest.getInstance("MD5")
     val chunk = ByteArray(8192)
     var byteSize = 0L
-    content.open().buffered().use { src ->
-        SystemFileSystem.sink(tempFile).buffered().use { sink ->
-            while (true) {
-                val n = src.readAtMostTo(chunk, 0, chunk.size)
-                if (n == -1) break
-                digest.update(chunk, 0, n)
-                sink.write(chunk, 0, n)
-                byteSize += n
+    try {
+        content.open().buffered().use { src ->
+            SystemFileSystem.sink(tempFile).buffered().use { sink ->
+                while (true) {
+                    val n = src.readAtMostTo(chunk, 0, chunk.size)
+                    if (n == -1) break
+                    digest.update(chunk, 0, n)
+                    sink.write(chunk, 0, n)
+                    byteSize += n
+                }
             }
         }
+        val checksum = Base64.getEncoder().encodeToString(digest.digest())
+        return SpooledContent(tempFile, byteSize, checksum, content.filename, content.contentType)
+    } catch (e: Throwable) {
+        SystemFileSystem.delete(tempFile, mustExist = false)
+        throw e
     }
-    val checksum = Base64.getEncoder().encodeToString(digest.digest())
-    return SpooledContent(tempFile, byteSize, checksum, content.filename, content.contentType)
 }

@@ -11,6 +11,7 @@
 **Note on TDD framing:** This is a behavior-preserving refactor — the observable contract (byteSize, MD5 checksum, returned bytes) is identical before and after. The new tests are characterization/regression guards on large inputs, not red-first tests. Each task: add/extend the test, keep it (and the full suite) green, refactor the implementation, re-run. Spotless (ktlint) gates commits, so run `./gradlew spotlessApply` before each commit.
 
 **Verified API facts (smithy-kotlin 1.6.14 / kotlinx-io 0.9.0):**
+(smithy-kotlin is not pinned directly — it resolves transitively from `aws.sdk.kotlin:s3 1.6.91`; we intentionally do not pin a transitive to avoid version skew when the AWS SDK bumps its smithy floor. Verified against the version currently resolved.)
 - `kotlinx.io.Source.readAtMostTo(sink: ByteArray, startIndex = 0, endIndex = sink.size): Int` — returns `-1` at EOF.
 - `kotlinx.io.Sink.write(source: ByteArray, startIndex = 0, endIndex = source.size)`.
 - `kotlinx.io.Source.asInputStream(): InputStream` (import `kotlinx.io.asInputStream`; requires a buffered `Source`).

@@ -93,14 +93,15 @@ class S3StorageServiceIT {
 
             val tmpDir = java.io.File(System.getProperty("java.io.tmpdir"))
 
-            fun spoolFiles() = tmpDir.listFiles { _, n -> n.startsWith("aktive-s3-") }?.size ?: 0
+            fun spoolFiles() = tmpDir.listFiles { _, n -> n.startsWith("aktive-s3-") }?.map { it.name }?.toSet() ?: emptySet()
             val before = spoolFiles()
 
             val source = s.get("k3")
             val bytes = source.buffered().use { it.readByteArray() }
             assertContentEquals("stream-me".encodeToByteArray(), bytes)
 
-            assertEquals(before, spoolFiles())
+            // Compare the file *set*, not a count, so unrelated temp files can't perturb the result.
+            assertEquals(emptySet(), spoolFiles() - before, "get() must leave no temp file behind after close")
             s.delete("k3")
         }
 
