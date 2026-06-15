@@ -47,7 +47,7 @@ public class S3StorageService(
                     this.bucket = this@S3StorageService.bucket
                     this.key = key
                 },
-            ) { resp -> resp.body?.toByteArray() ?: ByteArray(0) }
+            ) { resp -> resp.body?.toByteArray() ?: error("S3 returned no body for key=$key") }
         return Buffer().also { it.write(bytes) }
     }
 
