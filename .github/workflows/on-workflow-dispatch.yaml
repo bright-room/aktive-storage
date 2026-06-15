@@ -1,0 +1,70 @@
+name: on-workflow-dispatch
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version (e.g. v0.1.0)"
+        required: true
+        type: string
+
+permissions: {}
+
+jobs:
+  validate:
+    name: Validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Validate version format
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          if [[ ! "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$ ]]; then
+            echo "::error::Invalid version format: $VERSION (expected v1.2.3 or v1.2.3-rc.1)"
+            exit 1
+          fi
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Check tag does not already exist
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          if git rev-parse "refs/tags/${VERSION}" >/dev/null 2>&1; then
+            echo "::error::Tag ${VERSION} already exists"
+            exit 1
+          fi
+
+  push-tag:
+    name: Push Tag
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          app-id: ${{ vars.CHLOE_CHAN_APP_ID }}
+          private-key: ${{ secrets.CHLOE_CHAN_APP_PRIVATE_KEY }}
+      - name: Create signed tag via API
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          REPO: ${{ github.repository }}
+          VERSION: ${{ inputs.version }}
+          OBJECT_SHA: ${{ github.sha }}
+        run: |
+          TAG_SHA=$(gh api "repos/${REPO}/git/tags" \
+            --method POST \
+            --field "tag=${VERSION}" \
+            --field "message=Release ${VERSION}" \
+            --field "object=${OBJECT_SHA}" \
+            --field "type=commit" \
+            --jq '.sha')
+
+          gh api "repos/${REPO}/git/refs" \
+            --method POST \
+            --field "ref=refs/tags/${VERSION}" \
+            --field "sha=${TAG_SHA}"
