@@ -1,0 +1,11 @@
+public final class net/brightroom/aktivestorage/metadata/exposed/ExposedMetadataStore : net/brightroom/aktivestorage/MetadataStore {
+	public fun <init> (Lorg/jetbrains/exposed/v1/jdbc/Database;)V
+	public final fun createSchema ()V
+	public fun deleteAttachment-wzXLxV0 (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun deleteBlob-K4yIXZU (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun findAttachments (Lnet/brightroom/aktivestorage/RecordRef;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun findBlob-K4yIXZU (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun insertAttachment (Lnet/brightroom/aktivestorage/Attachment;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun insertBlob (Lnet/brightroom/aktivestorage/Blob;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
