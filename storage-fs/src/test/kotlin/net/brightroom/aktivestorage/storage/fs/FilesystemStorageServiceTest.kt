@@ -55,4 +55,13 @@ class FilesystemStorageServiceTest {
             service(dir).put("../escape", ContentSource.ofBytes("f", "text/plain", "x".encodeToByteArray()), bytes("x"))
         }
     }
+
+    @Test
+    fun `rejects backslash path traversal keys`(
+        @TempDir dir: java.io.File,
+    ) = runTest {
+        assertFailsWith<IllegalArgumentException> {
+            service(dir).put("..\\escape", ContentSource.ofBytes("f", "text/plain", "x".encodeToByteArray()), bytes("x"))
+        }
+    }
 }

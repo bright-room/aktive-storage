@@ -27,10 +27,15 @@ public class FilesystemStorageService(
             val target = resolveSafe(key)
             target.parent?.let { SystemFileSystem.createDirectories(it) }
             val tmp = Path(target.parent.toString(), "${target.name}.tmp-${UUID.randomUUID()}")
-            content.open().use { src ->
-                SystemFileSystem.sink(tmp).buffered().use { sink -> sink.transferFrom(src) }
+            try {
+                content.open().use { src ->
+                    SystemFileSystem.sink(tmp).buffered().use { sink -> sink.transferFrom(src) }
+                }
+                SystemFileSystem.atomicMove(tmp, target)
+            } catch (e: Throwable) {
+                SystemFileSystem.delete(tmp, mustExist = false)
+                throw e
             }
-            SystemFileSystem.atomicMove(tmp, target)
         }
 
     override suspend fun get(key: String): RawSource = withContext(Dispatchers.IO) { SystemFileSystem.source(resolveSafe(key)) }
@@ -46,7 +51,7 @@ public class FilesystemStorageService(
     ): PresignedUrl? = null
 
     private fun resolveSafe(key: String): Path {
-        val parts = key.split('/')
+        val parts = key.split('/', '\\')
         require(key.isNotBlank() && parts.none { it == ".." || it == "." || it.isEmpty() }) {
             "invalid storage key: $key"
         }
