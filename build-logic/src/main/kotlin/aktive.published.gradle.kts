@@ -31,8 +31,20 @@ publishing {
                 name.set(project.name)
                 description.set("Framework-agnostic file attachment toolkit for the JVM (${project.name}).")
                 url.set("https://github.com/bright-room/aktive-storage")
-                licenses { license { name.set("Apache-2.0") } }
-                developers { developer { id.set("bright-room") } }
+                licenses {
+                    license {
+                        name.set("Apache-2.0")
+                        url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
+                    }
+                }
+                developers {
+                    developer {
+                        id.set("bright-room")
+                        name.set("Nonaka Koki")
+                        email.set("koki-nonaka@outlook.jp")
+                        url.set("https://bright-room.net")
+                    }
+                }
                 scm { url.set("https://github.com/bright-room/aktive-storage") }
             }
         }
