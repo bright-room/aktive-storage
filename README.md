@@ -4,6 +4,8 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![CI](https://github.com/bright-room/aktive-storage/actions/workflows/ci.yml/badge.svg)](https://github.com/bright-room/aktive-storage/actions/workflows/ci.yml)
 
+**English** | [日本語](README.ja.md)
+
 Framework-agnostic file attachment toolkit for the JVM — a Kotlin core with pluggable storage, ORM, and image-variant adapters. Inspired by Rails' ActiveStorage, but free of any web-framework or ORM lock-in.
 
 ## Modules
