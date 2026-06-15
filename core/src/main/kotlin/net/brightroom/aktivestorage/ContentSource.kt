@@ -15,7 +15,7 @@ public interface ContentSource {
             filename: String,
             contentType: String,
             bytes: ByteArray,
-        ): ContentSource = ByteArrayContentSource(filename, contentType, bytes)
+        ): ContentSource = ByteArrayContentSource(filename, contentType, bytes.copyOf())
     }
 }
 

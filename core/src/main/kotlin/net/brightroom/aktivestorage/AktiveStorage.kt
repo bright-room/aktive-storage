@@ -33,7 +33,12 @@ public class AktiveStorage(
                     createdAt = clock.now(),
                 )
             metadata.insertBlob(blob)
-            service.put(key, spooled, ObjectMetadata(blob.contentType, blob.byteSize, blob.checksum))
+            try {
+                service.put(key, spooled, ObjectMetadata(blob.contentType, blob.byteSize, blob.checksum))
+            } catch (e: Throwable) {
+                metadata.deleteBlob(blob.id)
+                throw e
+            }
             val attachment =
                 Attachment(
                     id = AttachmentId(UUID.randomUUID().toString()),

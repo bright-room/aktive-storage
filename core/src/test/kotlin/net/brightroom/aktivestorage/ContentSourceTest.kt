@@ -17,4 +17,13 @@ class ContentSourceTest {
         assertContentEquals("hello".encodeToByteArray(), first)
         assertContentEquals("hello".encodeToByteArray(), second)
     }
+
+    @Test
+    fun `ofBytes defensively copies the input array`() {
+        val original = "hello".encodeToByteArray()
+        val src = ContentSource.ofBytes("a.txt", "text/plain", original)
+        original[0] = 'X'.code.toByte()
+        val read = src.open().use { it.buffered().readByteArray() }
+        assertContentEquals("hello".encodeToByteArray(), read)
+    }
 }
