@@ -1,0 +1,222 @@
+public final class net/brightroom/aktivestorage/AktiveStorage {
+	public fun <init> (Lnet/brightroom/aktivestorage/StorageService;Lnet/brightroom/aktivestorage/MetadataStore;Lnet/brightroom/aktivestorage/ReferenceSigner;Lnet/brightroom/aktivestorage/KeyGenerator;Lkotlin/time/Clock;)V
+	public synthetic fun <init> (Lnet/brightroom/aktivestorage/StorageService;Lnet/brightroom/aktivestorage/MetadataStore;Lnet/brightroom/aktivestorage/ReferenceSigner;Lnet/brightroom/aktivestorage/KeyGenerator;Lkotlin/time/Clock;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun attach (Lnet/brightroom/aktivestorage/RecordRef;Ljava/lang/String;Lnet/brightroom/aktivestorage/ContentSource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun attachments (Lnet/brightroom/aktivestorage/RecordRef;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun blobOf (Lnet/brightroom/aktivestorage/Attachment;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun detach (Lnet/brightroom/aktivestorage/Attachment;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun detach$default (Lnet/brightroom/aktivestorage/AktiveStorage;Lnet/brightroom/aktivestorage/Attachment;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public final fun resolveForDelivery-8Mi8wO0 (Ljava/lang/String;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun resolveForDelivery-8Mi8wO0$default (Lnet/brightroom/aktivestorage/AktiveStorage;Ljava/lang/String;JLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public final fun signedReference-HG0u8IE (Lnet/brightroom/aktivestorage/Blob;J)Ljava/lang/String;
+}
+
+public final class net/brightroom/aktivestorage/Attachment {
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Lnet/brightroom/aktivestorage/RecordRef;Ljava/lang/String;Lkotlin/time/Instant;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1-qJ9XR30 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Lnet/brightroom/aktivestorage/RecordRef;
+	public final fun component4--00QrDA ()Ljava/lang/String;
+	public final fun component5 ()Lkotlin/time/Instant;
+	public final fun copy-suV9U1E (Ljava/lang/String;Ljava/lang/String;Lnet/brightroom/aktivestorage/RecordRef;Ljava/lang/String;Lkotlin/time/Instant;)Lnet/brightroom/aktivestorage/Attachment;
+	public static synthetic fun copy-suV9U1E$default (Lnet/brightroom/aktivestorage/Attachment;Ljava/lang/String;Ljava/lang/String;Lnet/brightroom/aktivestorage/RecordRef;Ljava/lang/String;Lkotlin/time/Instant;ILjava/lang/Object;)Lnet/brightroom/aktivestorage/Attachment;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getBlobId--00QrDA ()Ljava/lang/String;
+	public final fun getCreatedAt ()Lkotlin/time/Instant;
+	public final fun getId-qJ9XR30 ()Ljava/lang/String;
+	public final fun getName ()Ljava/lang/String;
+	public final fun getRecord ()Lnet/brightroom/aktivestorage/RecordRef;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class net/brightroom/aktivestorage/AttachmentId {
+	public static final synthetic fun box-impl (Ljava/lang/String;)Lnet/brightroom/aktivestorage/AttachmentId;
+	public static fun constructor-impl (Ljava/lang/String;)Ljava/lang/String;
+	public fun equals (Ljava/lang/Object;)Z
+	public static fun equals-impl (Ljava/lang/String;Ljava/lang/Object;)Z
+	public static final fun equals-impl0 (Ljava/lang/String;Ljava/lang/String;)Z
+	public final fun getValue ()Ljava/lang/String;
+	public fun hashCode ()I
+	public static fun hashCode-impl (Ljava/lang/String;)I
+	public fun toString ()Ljava/lang/String;
+	public static fun toString-impl (Ljava/lang/String;)Ljava/lang/String;
+	public final synthetic fun unbox-impl ()Ljava/lang/String;
+}
+
+public final class net/brightroom/aktivestorage/Blob {
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JLjava/lang/String;Ljava/lang/String;Lkotlin/time/Instant;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1--00QrDA ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Ljava/lang/String;
+	public final fun component5 ()J
+	public final fun component6 ()Ljava/lang/String;
+	public final fun component7 ()Ljava/lang/String;
+	public final fun component8 ()Lkotlin/time/Instant;
+	public final fun copy-IBfB0eU (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JLjava/lang/String;Ljava/lang/String;Lkotlin/time/Instant;)Lnet/brightroom/aktivestorage/Blob;
+	public static synthetic fun copy-IBfB0eU$default (Lnet/brightroom/aktivestorage/Blob;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JLjava/lang/String;Ljava/lang/String;Lkotlin/time/Instant;ILjava/lang/Object;)Lnet/brightroom/aktivestorage/Blob;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getByteSize ()J
+	public final fun getChecksum ()Ljava/lang/String;
+	public final fun getContentType ()Ljava/lang/String;
+	public final fun getCreatedAt ()Lkotlin/time/Instant;
+	public final fun getFilename ()Ljava/lang/String;
+	public final fun getId--00QrDA ()Ljava/lang/String;
+	public final fun getKey ()Ljava/lang/String;
+	public final fun getServiceName ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class net/brightroom/aktivestorage/BlobId {
+	public static final synthetic fun box-impl (Ljava/lang/String;)Lnet/brightroom/aktivestorage/BlobId;
+	public static fun constructor-impl (Ljava/lang/String;)Ljava/lang/String;
+	public fun equals (Ljava/lang/Object;)Z
+	public static fun equals-impl (Ljava/lang/String;Ljava/lang/Object;)Z
+	public static final fun equals-impl0 (Ljava/lang/String;Ljava/lang/String;)Z
+	public final fun getValue ()Ljava/lang/String;
+	public fun hashCode ()I
+	public static fun hashCode-impl (Ljava/lang/String;)I
+	public fun toString ()Ljava/lang/String;
+	public static fun toString-impl (Ljava/lang/String;)Ljava/lang/String;
+	public final synthetic fun unbox-impl ()Ljava/lang/String;
+}
+
+public abstract interface class net/brightroom/aktivestorage/ContentSource {
+	public static final field Companion Lnet/brightroom/aktivestorage/ContentSource$Companion;
+	public abstract fun getContentType ()Ljava/lang/String;
+	public abstract fun getFilename ()Ljava/lang/String;
+	public abstract fun open ()Lkotlinx/io/RawSource;
+}
+
+public final class net/brightroom/aktivestorage/ContentSource$Companion {
+	public final fun ofBytes (Ljava/lang/String;Ljava/lang/String;[B)Lnet/brightroom/aktivestorage/ContentSource;
+}
+
+public abstract interface class net/brightroom/aktivestorage/Delivery {
+}
+
+public final class net/brightroom/aktivestorage/Delivery$Proxy : net/brightroom/aktivestorage/Delivery {
+	public fun <init> (Lnet/brightroom/aktivestorage/Blob;Lkotlinx/io/RawSource;)V
+	public final fun component1 ()Lnet/brightroom/aktivestorage/Blob;
+	public final fun component2 ()Lkotlinx/io/RawSource;
+	public final fun copy (Lnet/brightroom/aktivestorage/Blob;Lkotlinx/io/RawSource;)Lnet/brightroom/aktivestorage/Delivery$Proxy;
+	public static synthetic fun copy$default (Lnet/brightroom/aktivestorage/Delivery$Proxy;Lnet/brightroom/aktivestorage/Blob;Lkotlinx/io/RawSource;ILjava/lang/Object;)Lnet/brightroom/aktivestorage/Delivery$Proxy;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getBlob ()Lnet/brightroom/aktivestorage/Blob;
+	public final fun getStream ()Lkotlinx/io/RawSource;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class net/brightroom/aktivestorage/Delivery$Redirect : net/brightroom/aktivestorage/Delivery {
+	public synthetic fun <init> (Ljava/lang/String;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1-LrGB1uw ()Ljava/lang/String;
+	public final fun copy-uIZ4Fms (Ljava/lang/String;)Lnet/brightroom/aktivestorage/Delivery$Redirect;
+	public static synthetic fun copy-uIZ4Fms$default (Lnet/brightroom/aktivestorage/Delivery$Redirect;Ljava/lang/String;ILjava/lang/Object;)Lnet/brightroom/aktivestorage/Delivery$Redirect;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getUrl-LrGB1uw ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class net/brightroom/aktivestorage/HmacReferenceSigner : net/brightroom/aktivestorage/ReferenceSigner {
+	public static final field ALGORITHM Ljava/lang/String;
+	public fun <init> ([BLkotlin/time/Clock;)V
+	public synthetic fun <init> ([BLkotlin/time/Clock;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun sign-K4yIXZU (Ljava/lang/String;Lkotlin/time/Instant;)Ljava/lang/String;
+	public fun verify--LBQjFs (Ljava/lang/String;)Ljava/lang/String;
+}
+
+public final class net/brightroom/aktivestorage/KeyContext {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Lnet/brightroom/aktivestorage/RecordRef;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Lnet/brightroom/aktivestorage/RecordRef;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Lnet/brightroom/aktivestorage/RecordRef;)Lnet/brightroom/aktivestorage/KeyContext;
+	public static synthetic fun copy$default (Lnet/brightroom/aktivestorage/KeyContext;Ljava/lang/String;Ljava/lang/String;Lnet/brightroom/aktivestorage/RecordRef;ILjava/lang/Object;)Lnet/brightroom/aktivestorage/KeyContext;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getContentType ()Ljava/lang/String;
+	public final fun getFilename ()Ljava/lang/String;
+	public final fun getRecord ()Lnet/brightroom/aktivestorage/RecordRef;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class net/brightroom/aktivestorage/KeyGenerator {
+	public abstract fun generate (Lnet/brightroom/aktivestorage/KeyContext;)Ljava/lang/String;
+}
+
+public abstract interface class net/brightroom/aktivestorage/MetadataStore {
+	public abstract fun deleteAttachment-wzXLxV0 (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun deleteBlob-K4yIXZU (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun findAttachments (Lnet/brightroom/aktivestorage/RecordRef;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun findBlob-K4yIXZU (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun insertAttachment (Lnet/brightroom/aktivestorage/Attachment;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun insertBlob (Lnet/brightroom/aktivestorage/Blob;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class net/brightroom/aktivestorage/ObjectMetadata {
+	public fun <init> (Ljava/lang/String;JLjava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()J
+	public final fun component3 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;JLjava/lang/String;)Lnet/brightroom/aktivestorage/ObjectMetadata;
+	public static synthetic fun copy$default (Lnet/brightroom/aktivestorage/ObjectMetadata;Ljava/lang/String;JLjava/lang/String;ILjava/lang/Object;)Lnet/brightroom/aktivestorage/ObjectMetadata;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getByteSize ()J
+	public final fun getChecksum ()Ljava/lang/String;
+	public final fun getContentType ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class net/brightroom/aktivestorage/PresignedUrl {
+	public static final synthetic fun box-impl (Ljava/lang/String;)Lnet/brightroom/aktivestorage/PresignedUrl;
+	public static fun constructor-impl (Ljava/lang/String;)Ljava/lang/String;
+	public fun equals (Ljava/lang/Object;)Z
+	public static fun equals-impl (Ljava/lang/String;Ljava/lang/Object;)Z
+	public static final fun equals-impl0 (Ljava/lang/String;Ljava/lang/String;)Z
+	public final fun getValue ()Ljava/lang/String;
+	public fun hashCode ()I
+	public static fun hashCode-impl (Ljava/lang/String;)I
+	public fun toString ()Ljava/lang/String;
+	public static fun toString-impl (Ljava/lang/String;)Ljava/lang/String;
+	public final synthetic fun unbox-impl ()Ljava/lang/String;
+}
+
+public final class net/brightroom/aktivestorage/RandomTokenKeyGenerator : net/brightroom/aktivestorage/KeyGenerator {
+	public fun <init> ()V
+	public fun <init> (I)V
+	public synthetic fun <init> (IILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun generate (Lnet/brightroom/aktivestorage/KeyContext;)Ljava/lang/String;
+}
+
+public final class net/brightroom/aktivestorage/RecordRef {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;)Lnet/brightroom/aktivestorage/RecordRef;
+	public static synthetic fun copy$default (Lnet/brightroom/aktivestorage/RecordRef;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lnet/brightroom/aktivestorage/RecordRef;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getId ()Ljava/lang/String;
+	public final fun getType ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class net/brightroom/aktivestorage/ReferenceSigner {
+	public abstract fun sign-K4yIXZU (Ljava/lang/String;Lkotlin/time/Instant;)Ljava/lang/String;
+	public abstract fun verify--LBQjFs (Ljava/lang/String;)Ljava/lang/String;
+}
+
+public abstract interface class net/brightroom/aktivestorage/StorageService {
+	public abstract fun delete (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun exists (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun get (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun getName ()Ljava/lang/String;
+	public abstract fun presignedGetUrl-yJnnbbc (Ljava/lang/String;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun put (Ljava/lang/String;Lnet/brightroom/aktivestorage/ContentSource;Lnet/brightroom/aktivestorage/ObjectMetadata;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+

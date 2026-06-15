@@ -1,0 +1,12 @@
+public final class net/brightroom/aktivestorage/storage/s3/S3StorageService : net/brightroom/aktivestorage/StorageService {
+	public fun <init> (Laws/sdk/kotlin/services/s3/S3Client;Ljava/lang/String;Ljava/lang/String;)V
+	public synthetic fun <init> (Laws/sdk/kotlin/services/s3/S3Client;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun delete (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun exists (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun get (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun getName ()Ljava/lang/String;
+	public fun presignedGetUrl-g3J4TuI (Ljava/lang/String;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public synthetic fun presignedGetUrl-yJnnbbc (Ljava/lang/String;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun put (Ljava/lang/String;Lnet/brightroom/aktivestorage/ContentSource;Lnet/brightroom/aktivestorage/ObjectMetadata;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
