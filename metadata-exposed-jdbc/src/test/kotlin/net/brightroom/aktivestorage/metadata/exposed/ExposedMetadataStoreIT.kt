@@ -7,8 +7,11 @@ import net.brightroom.aktivestorage.Blob
 import net.brightroom.aktivestorage.BlobId
 import net.brightroom.aktivestorage.RecordRef
 import org.jetbrains.exposed.v1.jdbc.Database
+import org.jetbrains.exposed.v1.jdbc.deleteAll
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -21,6 +24,7 @@ import kotlin.time.Instant
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ExposedMetadataStoreIT {
     private lateinit var pg: PostgreSQLContainer<*>
+    private lateinit var db: Database
     private lateinit var store: ExposedMetadataStore
 
     private fun blob(
@@ -40,8 +44,16 @@ class ExposedMetadataStoreIT {
     @BeforeAll
     fun setup() {
         pg = PostgreSQLContainer("postgres:17").also { it.start() }
-        val db = Database.connect(pg.jdbcUrl, user = pg.username, password = pg.password)
+        db = Database.connect(pg.jdbcUrl, user = pg.username, password = pg.password)
         store = ExposedMetadataStore(db).also { it.createSchema() }
+    }
+
+    @BeforeEach
+    fun clean() {
+        transaction(db) {
+            AttachmentsTable.deleteAll()
+            BlobsTable.deleteAll()
+        }
     }
 
     @AfterAll
