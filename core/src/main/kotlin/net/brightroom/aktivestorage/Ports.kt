@@ -19,6 +19,7 @@ public interface StorageService {
 
     public suspend fun exists(key: String): Boolean
 
+    /** キーに対応する実体を削除する。存在しないキーに対しては no-op（冪等）。 */
     public suspend fun delete(key: String)
 
     /** presigned GET URL。非対応（fs 等）は null。 */
