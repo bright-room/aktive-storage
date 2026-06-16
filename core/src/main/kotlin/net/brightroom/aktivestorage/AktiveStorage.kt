@@ -4,6 +4,7 @@ import java.util.UUID
 import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.Instant
 
 public class AktiveStorage(
     private val service: StorageService,
@@ -77,6 +78,22 @@ public class AktiveStorage(
         val blob = metadata.findBlob(attachment.blobId) ?: return
         service.delete(blob.key)
         metadata.deleteBlob(blob.id)
+    }
+
+    /**
+     * 参照ゼロ かつ olderThan より前に作られた Blob を回収し、回収できた件数を返す。
+     * olderThan は呼び出し側が `now - grace` として渡し、進行中の attach を除外する。
+     * 実体 → Blob 行 の順で削除する。途中失敗時は例外を伝播し、削除済み分は確定する
+     * （冪等 delete 前提で再実行すれば残りを処理して収束する）。
+     * いつ走らせるかは利用者の責務（このライブラリは job を持たない）。
+     */
+    public suspend fun reclaimUnattached(olderThan: Instant): Int {
+        val orphans = metadata.findUnattachedBlobs(olderThan)
+        for (blob in orphans) {
+            service.delete(blob.key)
+            metadata.deleteBlob(blob.id)
+        }
+        return orphans.size
     }
 
     /** 配信用の署名参照トークンを発行する。 */
