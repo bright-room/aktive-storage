@@ -89,11 +89,13 @@ public class AktiveStorage(
      */
     public suspend fun reclaimUnattached(olderThan: Instant): Int {
         val orphans = metadata.findUnattachedBlobs(olderThan)
+        var reclaimed = 0
         for (blob in orphans) {
             service.delete(blob.key)
             metadata.deleteBlob(blob.id)
+            reclaimed++
         }
-        return orphans.size
+        return reclaimed
     }
 
     /** レコードの全添付（name 問わず）を参照カウント安全に detach+purge する。 */
