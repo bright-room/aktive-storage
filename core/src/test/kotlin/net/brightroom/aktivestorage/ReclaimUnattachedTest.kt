@@ -39,7 +39,9 @@ class ReclaimUnattachedTest {
             // 紐付き（対象外）
             m.insertBlob(blob("att", "k-att", 100))
             s.objects["k-att"] = "z".encodeToByteArray()
-            m.insertAttachment(Attachment(AttachmentId("a"), "avatar", RecordRef("User", "u"), BlobId("att"), Instant.fromEpochMilliseconds(100)))
+            m.insertAttachment(
+                Attachment(AttachmentId("a"), "avatar", RecordRef("User", "u"), BlobId("att"), Instant.fromEpochMilliseconds(100)),
+            )
 
             val reclaimed = st.reclaimUnattached(Instant.fromEpochMilliseconds(1000))
 

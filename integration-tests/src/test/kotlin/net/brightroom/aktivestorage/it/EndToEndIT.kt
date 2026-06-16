@@ -22,7 +22,10 @@ import org.junit.jupiter.api.TestInstance
 import org.testcontainers.containers.MinIOContainer
 import org.testcontainers.containers.PostgreSQLContainer
 import kotlin.test.assertContentEquals
+import kotlin.test.assertEquals
 import kotlin.test.assertIs
+import kotlin.test.assertNull
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.minutes
 
 @Tag("integration")
@@ -115,5 +118,40 @@ class EndToEndIT {
             conn.readTimeout = 30_000
             val fetched = conn.inputStream.use { it.readBytes() }
             assertContentEquals(payload, fetched)
+        }
+
+    @Test
+    fun `detach purges blob and object, and reclaim sweeps a kept-but-orphaned blob`() =
+        runBlocking {
+            val record = RecordRef("User", "del")
+            val att = storage.attach(record, "avatar", ContentSource.ofBytes("a.png", "image/png", "bytes".encodeToByteArray()))
+
+            // purge=true で実体と Blob 行が消える（blobOf が null になる）
+            storage.detach(att, purgeBlob = true)
+            assertNull(storage.blobOf(att))
+
+            // purge=false で残した Blob は孤立として reclaim 対象になる
+            val att2 = storage.attach(record, "cover", ContentSource.ofBytes("c.png", "image/png", "more".encodeToByteArray()))
+            storage.detach(att2, purgeBlob = false)
+
+            // 猶予を now+1m に広げ、att2 由来の Blob を確実に対象化する（同一ミリ秒競合の回避）。
+            // att の Blob は purge 済み、他テストは紐付き/完全 purge のため、回収は att2 の 1 件のみ
+            val reclaimed = storage.reclaimUnattached(Clock.System.now() + 1.minutes)
+            assertEquals(1, reclaimed)
+        }
+
+    @Test
+    fun `purgeRecord removes all attachments of a record`() =
+        runBlocking {
+            val record = RecordRef("User", "bulk")
+            val avatarAtt = storage.attach(record, "avatar", ContentSource.ofBytes("a", "text/plain", "x".encodeToByteArray()))
+            val docAtt = storage.attach(record, "documents", ContentSource.ofBytes("d", "text/plain", "y".encodeToByteArray()))
+
+            storage.purgeRecord(record)
+
+            assertEquals(0, storage.attachments(record, "avatar").size)
+            assertEquals(0, storage.attachments(record, "documents").size)
+            assertNull(storage.blobOf(avatarAtt))
+            assertNull(storage.blobOf(docAtt))
         }
 }
