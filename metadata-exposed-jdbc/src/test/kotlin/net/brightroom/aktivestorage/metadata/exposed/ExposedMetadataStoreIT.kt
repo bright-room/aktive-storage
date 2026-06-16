@@ -84,4 +84,28 @@ class ExposedMetadataStoreIT {
 
             assertEquals(0, store.countAttachmentsForBlob(BlobId("no-such-blob")))
         }
+
+    @Test
+    fun `findUnattachedBlobs returns only old blobs with no attachment`() =
+        runBlocking {
+            // 古い孤立 Blob（createdAt=100, 参照なし）
+            store.insertBlob(
+                Blob(BlobId("u-old"), "ku-old", "f", "image/png", 1, "c", "s3", Instant.fromEpochMilliseconds(100)),
+            )
+            // 新しい孤立 Blob（createdAt=5000, 参照なし → 猶予内なので対象外）
+            store.insertBlob(
+                Blob(BlobId("u-new"), "ku-new", "f", "image/png", 1, "c", "s3", Instant.fromEpochMilliseconds(5000)),
+            )
+            // 古いが紐付きの Blob（createdAt=100, 参照あり → 対象外）
+            store.insertBlob(
+                Blob(BlobId("u-att"), "ku-att", "f", "image/png", 1, "c", "s3", Instant.fromEpochMilliseconds(100)),
+            )
+            store.insertAttachment(
+                Attachment(AttachmentId("ua1"), "avatar", RecordRef("User", "u"), BlobId("u-att"), Instant.fromEpochMilliseconds(100)),
+            )
+
+            val found = store.findUnattachedBlobs(Instant.fromEpochMilliseconds(1000)).map { it.id.value }.toSet()
+
+            assertEquals(setOf("u-old"), found)
+        }
 }

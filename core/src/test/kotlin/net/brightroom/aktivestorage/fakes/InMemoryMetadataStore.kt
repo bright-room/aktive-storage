@@ -6,6 +6,7 @@ import net.brightroom.aktivestorage.Blob
 import net.brightroom.aktivestorage.BlobId
 import net.brightroom.aktivestorage.MetadataStore
 import net.brightroom.aktivestorage.RecordRef
+import kotlin.time.Instant
 
 class InMemoryMetadataStore : MetadataStore {
     val blobs = mutableMapOf<String, Blob>()
@@ -35,4 +36,9 @@ class InMemoryMetadataStore : MetadataStore {
     }
 
     override suspend fun countAttachmentsForBlob(blobId: BlobId): Int = attachments.values.count { it.blobId == blobId }
+
+    override suspend fun findUnattachedBlobs(olderThan: Instant): List<Blob> =
+        blobs.values.filter { blob ->
+            blob.createdAt < olderThan && attachments.values.none { it.blobId == blob.id }
+        }
 }

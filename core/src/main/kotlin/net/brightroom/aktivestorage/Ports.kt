@@ -48,6 +48,9 @@ public interface MetadataStore {
 
     /** ある Blob を参照する Attachment 数。参照カウント安全 purge と孤立判定の基盤。 */
     public suspend fun countAttachmentsForBlob(blobId: BlobId): Int
+
+    /** 参照ゼロ かつ createdAt < olderThan の Blob。olderThan の猶予で進行中 attach を除外する。 */
+    public suspend fun findUnattachedBlobs(olderThan: Instant): List<Blob>
 }
 
 /** ストレージキー生成ストラテジ。 */
