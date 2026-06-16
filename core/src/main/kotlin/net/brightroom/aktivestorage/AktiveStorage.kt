@@ -96,6 +96,13 @@ public class AktiveStorage(
         return orphans.size
     }
 
+    /** レコードの全添付（name 問わず）を参照カウント安全に detach+purge する。 */
+    public suspend fun purgeRecord(record: RecordRef) {
+        for (attachment in metadata.findAttachmentsForRecord(record)) {
+            detach(attachment, purgeBlob = true)
+        }
+    }
+
     /** 配信用の署名参照トークンを発行する。 */
     public fun signedReference(
         blob: Blob,
