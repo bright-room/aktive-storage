@@ -63,8 +63,9 @@ public class AktiveStorage(
     public suspend fun blobOf(attachment: Attachment): Blob? = metadata.findBlob(attachment.blobId)
 
     /**
-     * 添付を外す。purgeBlob=true で Blob 行と実体も削除する。
-     * 注: MVP は参照カウントしない（共有 Blob の安全な回収はフェーズ2）。
+     * 添付を外す。purgeBlob=true でも、その Blob を参照する他の Attachment が
+     * 残っている場合は Blob 行・実体を残す（参照カウント安全）。
+     * 実体 → Blob 行 の順で削除し、冪等 delete 前提で再実行可能にする。
      */
     public suspend fun detach(
         attachment: Attachment,
@@ -72,9 +73,10 @@ public class AktiveStorage(
     ) {
         metadata.deleteAttachment(attachment.id)
         if (!purgeBlob) return
+        if (metadata.countAttachmentsForBlob(attachment.blobId) > 0) return
         val blob = metadata.findBlob(attachment.blobId) ?: return
-        metadata.deleteBlob(blob.id)
         service.delete(blob.key)
+        metadata.deleteBlob(blob.id)
     }
 
     /** 配信用の署名参照トークンを発行する。 */
