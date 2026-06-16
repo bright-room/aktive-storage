@@ -120,4 +120,21 @@ class ExposedMetadataStoreIT {
 
             assertEquals(setOf("u-old"), found)
         }
+
+    @Test
+    fun `findAttachmentsForRecord returns all names for the record only`() =
+        runBlocking {
+            store.insertBlob(blob("br1", "kr1"))
+            store.insertBlob(blob("br2", "kr2"))
+            store.insertBlob(blob("br3", "kr3"))
+            val target = RecordRef("User", "rec")
+            val other = RecordRef("User", "other")
+            store.insertAttachment(Attachment(AttachmentId("ar1"), "avatar", target, BlobId("br1"), Instant.fromEpochMilliseconds(0)))
+            store.insertAttachment(Attachment(AttachmentId("ar2"), "cover", target, BlobId("br2"), Instant.fromEpochMilliseconds(0)))
+            store.insertAttachment(Attachment(AttachmentId("ar3"), "avatar", other, BlobId("br3"), Instant.fromEpochMilliseconds(0)))
+
+            val names = store.findAttachmentsForRecord(target).map { it.name }.toSet()
+
+            assertEquals(setOf("avatar", "cover"), names)
+        }
 }

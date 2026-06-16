@@ -110,6 +110,16 @@ public class ExposedMetadataStore(
                 .map { it.toBlob() }
         }
 
+    override suspend fun findAttachmentsForRecord(record: RecordRef): List<Attachment> =
+        dbQuery {
+            AttachmentsTable
+                .selectAll()
+                .where {
+                    (AttachmentsTable.recordType eq record.type) and
+                        (AttachmentsTable.recordId eq record.id)
+                }.map { it.toAttachment() }
+        }
+
     private suspend fun <T> dbQuery(block: () -> T): T = withContext(Dispatchers.IO) { transaction(db) { block() } }
 
     private fun ResultRow.toBlob() =

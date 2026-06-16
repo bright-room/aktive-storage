@@ -51,6 +51,9 @@ public interface MetadataStore {
 
     /** 参照ゼロ かつ createdAt < olderThan の Blob。olderThan の猶予で進行中 attach を除外する。 */
     public suspend fun findUnattachedBlobs(olderThan: Instant): List<Blob>
+
+    /** name を問わずレコードの全添付。レコード削除との連動（一括 purge）に使う。 */
+    public suspend fun findAttachmentsForRecord(record: RecordRef): List<Attachment>
 }
 
 /** ストレージキー生成ストラテジ。 */

@@ -41,4 +41,7 @@ class InMemoryMetadataStore : MetadataStore {
         blobs.values.filter { blob ->
             blob.createdAt < olderThan && attachments.values.none { it.blobId == blob.id }
         }
+
+    override suspend fun findAttachmentsForRecord(record: RecordRef): List<Attachment> =
+        attachments.values.filter { it.record == record }
 }
