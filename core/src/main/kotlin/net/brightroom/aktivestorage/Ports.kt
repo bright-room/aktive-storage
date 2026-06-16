@@ -45,6 +45,9 @@ public interface MetadataStore {
     ): List<Attachment>
 
     public suspend fun deleteAttachment(id: AttachmentId)
+
+    /** ある Blob を参照する Attachment 数。参照カウント安全 purge と孤立判定の基盤。 */
+    public suspend fun countAttachmentsForBlob(blobId: BlobId): Int
 }
 
 /** ストレージキー生成ストラテジ。 */

@@ -90,6 +90,15 @@ public class ExposedMetadataStore(
             Unit
         }
 
+    override suspend fun countAttachmentsForBlob(blobId: BlobId): Int =
+        dbQuery {
+            AttachmentsTable
+                .selectAll()
+                .where { AttachmentsTable.blobId eq blobId.value }
+                .count()
+                .toInt()
+        }
+
     private suspend fun <T> dbQuery(block: () -> T): T = withContext(Dispatchers.IO) { transaction(db) { block() } }
 
     private fun ResultRow.toBlob() =

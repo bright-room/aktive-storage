@@ -69,4 +69,19 @@ class ExposedMetadataStoreIT {
             store.deleteAttachment(AttachmentId("a1"))
             assertEquals(0, store.findAttachments(record, "avatar").size)
         }
+
+    @Test
+    fun `countAttachmentsForBlob counts only matching attachments`() =
+        runBlocking {
+            store.insertBlob(blob("bc", "kc"))
+            val record = RecordRef("User", "count")
+            store.insertAttachment(Attachment(AttachmentId("ac1"), "avatar", record, BlobId("bc"), Instant.fromEpochMilliseconds(0)))
+            store.insertAttachment(Attachment(AttachmentId("ac2"), "cover", record, BlobId("bc"), Instant.fromEpochMilliseconds(0)))
+            assertEquals(2, store.countAttachmentsForBlob(BlobId("bc")))
+
+            store.deleteAttachment(AttachmentId("ac1"))
+            assertEquals(1, store.countAttachmentsForBlob(BlobId("bc")))
+
+            assertEquals(0, store.countAttachmentsForBlob(BlobId("no-such-blob")))
+        }
 }

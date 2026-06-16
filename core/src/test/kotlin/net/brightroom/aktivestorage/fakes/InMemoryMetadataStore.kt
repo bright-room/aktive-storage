@@ -33,4 +33,6 @@ class InMemoryMetadataStore : MetadataStore {
     override suspend fun deleteAttachment(id: AttachmentId) {
         attachments.remove(id.value)
     }
+
+    override suspend fun countAttachmentsForBlob(blobId: BlobId): Int = attachments.values.count { it.blobId == blobId }
 }
