@@ -29,3 +29,14 @@ internal object AttachmentsTable : Table("aktive_attachments") {
         index(false, blobId)
     }
 }
+
+internal object VariantRecordsTable : Table("aktive_variant_records") {
+    val originBlobId = varchar("origin_blob_id", 64).references(BlobsTable.id)
+    val variationDigest = varchar("variation_digest", 128)
+    val variantBlobId = varchar("variant_blob_id", 64).references(BlobsTable.id)
+    override val primaryKey = PrimaryKey(originBlobId, variationDigest)
+
+    init {
+        index(false, variantBlobId)
+    }
+}

@@ -8,6 +8,7 @@ import net.brightroom.aktivestorage.Blob
 import net.brightroom.aktivestorage.BlobId
 import net.brightroom.aktivestorage.MetadataStore
 import net.brightroom.aktivestorage.RecordRef
+import org.jetbrains.exposed.v1.core.JoinType
 import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
@@ -26,7 +27,7 @@ public class ExposedMetadataStore(
 ) : MetadataStore {
     /** テスト/開発用のスキーマ作成。本番は各自のマイグレーションで管理する。 */
     public fun createSchema() {
-        transaction(db) { SchemaUtils.create(BlobsTable, AttachmentsTable) }
+        transaction(db) { SchemaUtils.create(BlobsTable, AttachmentsTable, VariantRecordsTable) }
     }
 
     override suspend fun insertBlob(blob: Blob): Unit =
@@ -104,10 +105,16 @@ public class ExposedMetadataStore(
     override suspend fun findUnattachedBlobs(olderThan: Instant): List<Blob> =
         dbQuery {
             val cutoff = olderThan.toEpochMilliseconds()
+            val variantBlobIds =
+                VariantRecordsTable
+                    .selectAll()
+                    .map { it[VariantRecordsTable.variantBlobId] }
+                    .toSet()
             (BlobsTable leftJoin AttachmentsTable)
                 .selectAll()
                 .where { AttachmentsTable.id.isNull() and (BlobsTable.createdAt less cutoff) }
                 .map { it.toBlob() }
+                .filterNot { it.id.value in variantBlobIds }
         }
 
     override suspend fun findAttachmentsForRecord(record: RecordRef): List<Attachment> =
@@ -118,6 +125,68 @@ public class ExposedMetadataStore(
                     (AttachmentsTable.recordType eq record.type) and
                         (AttachmentsTable.recordId eq record.id)
                 }.map { it.toAttachment() }
+        }
+
+    override suspend fun findVariant(
+        originBlobId: BlobId,
+        variationDigest: String,
+    ): Blob? =
+        dbQuery {
+            BlobsTable
+                .join(VariantRecordsTable, JoinType.INNER, onColumn = BlobsTable.id, otherColumn = VariantRecordsTable.variantBlobId)
+                .selectAll()
+                .where {
+                    (VariantRecordsTable.originBlobId eq originBlobId.value) and
+                        (VariantRecordsTable.variationDigest eq variationDigest)
+                }.singleOrNull()
+                ?.toBlob()
+        }
+
+    override suspend fun insertVariant(
+        originBlobId: BlobId,
+        variationDigest: String,
+        variant: Blob,
+    ): Unit =
+        dbQuery {
+            BlobsTable.insert {
+                it[id] = variant.id.value
+                it[key] = variant.key
+                it[filename] = variant.filename
+                it[contentType] = variant.contentType
+                it[byteSize] = variant.byteSize
+                it[checksum] = variant.checksum
+                it[serviceName] = variant.serviceName
+                it[createdAt] = variant.createdAt.toEpochMilliseconds()
+            }
+            VariantRecordsTable.insert {
+                it[VariantRecordsTable.originBlobId] = originBlobId.value
+                it[VariantRecordsTable.variationDigest] = variationDigest
+                it[variantBlobId] = variant.id.value
+            }
+            Unit
+        }
+
+    override suspend fun findVariantsOf(originBlobId: BlobId): List<Blob> =
+        dbQuery {
+            BlobsTable
+                .join(VariantRecordsTable, JoinType.INNER, onColumn = BlobsTable.id, otherColumn = VariantRecordsTable.variantBlobId)
+                .selectAll()
+                .where { VariantRecordsTable.originBlobId eq originBlobId.value }
+                .map { it.toBlob() }
+        }
+
+    override suspend fun deleteVariantsOf(originBlobId: BlobId): Unit =
+        dbQuery {
+            val variantIds =
+                VariantRecordsTable
+                    .selectAll()
+                    .where { VariantRecordsTable.originBlobId eq originBlobId.value }
+                    .map { it[VariantRecordsTable.variantBlobId] }
+            VariantRecordsTable.deleteWhere { VariantRecordsTable.originBlobId eq originBlobId.value }
+            for (vid in variantIds) {
+                BlobsTable.deleteWhere { BlobsTable.id eq vid }
+            }
+            Unit
         }
 
     private suspend fun <T> dbQuery(block: () -> T): T = withContext(Dispatchers.IO) { transaction(db) { block() } }
