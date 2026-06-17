@@ -9,5 +9,6 @@ dependencies {
         api(project(":storage-fs"))
         api(project(":storage-s3"))
         api(project(":metadata-exposed-jdbc"))
+        api(project(":variant-scrimage"))
     }
 }
