@@ -12,6 +12,7 @@ import org.jetbrains.exposed.v1.core.JoinType
 import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.core.isNull
 import org.jetbrains.exposed.v1.core.less
 import org.jetbrains.exposed.v1.jdbc.Database
@@ -183,8 +184,8 @@ public class ExposedMetadataStore(
                     .where { VariantRecordsTable.originBlobId eq originBlobId.value }
                     .map { it[VariantRecordsTable.variantBlobId] }
             VariantRecordsTable.deleteWhere { VariantRecordsTable.originBlobId eq originBlobId.value }
-            for (vid in variantIds) {
-                BlobsTable.deleteWhere { BlobsTable.id eq vid }
+            if (variantIds.isNotEmpty()) {
+                BlobsTable.deleteWhere { BlobsTable.id inList variantIds }
             }
             Unit
         }
