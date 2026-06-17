@@ -129,6 +129,7 @@ public class AktiveStorage(
         if (metadata.countAttachmentsForBlob(attachment.blobId) > 0) return
         val blob = metadata.findBlob(attachment.blobId) ?: return
         if (blob.serviceName != service.name) return
+        purgeVariantsOf(blob)
         service.delete(blob.key)
         metadata.deleteBlob(blob.id)
     }
@@ -146,6 +147,7 @@ public class AktiveStorage(
         var reclaimed = 0
         for (blob in orphans) {
             if (blob.serviceName != service.name) continue
+            purgeVariantsOf(blob)
             service.delete(blob.key)
             metadata.deleteBlob(blob.id)
             reclaimed++
@@ -178,6 +180,14 @@ public class AktiveStorage(
         val blob = metadata.findBlob(blobId) ?: return null
         val url = service.presignedGetUrl(blob.key, redirectTtl)
         return if (url != null) Delivery.Redirect(url) else Delivery.Proxy(blob, service.get(blob.key))
+    }
+
+    /** 元 Blob に紐づく派生の実体を消し、variant 記録と派生 Blob 行を削除する。 */
+    private suspend fun purgeVariantsOf(origin: Blob) {
+        for (variant in metadata.findVariantsOf(origin.id)) {
+            service.delete(variant.key)
+        }
+        metadata.deleteVariantsOf(origin.id)
     }
 
     private fun digestOf(variation: Variation): String =
