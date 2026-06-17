@@ -1,16 +1,19 @@
 package net.brightroom.aktivestorage
 
-import java.util.UUID
 import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
+@OptIn(ExperimentalUuidApi::class)
 public class AktiveStorage(
     private val service: StorageService,
     private val metadata: MetadataStore,
     private val signer: ReferenceSigner,
     private val keyGenerator: KeyGenerator = RandomTokenKeyGenerator(),
+    private val checksum: Checksum = Md5Checksum(),
     private val clock: Clock = Clock.System,
 ) {
     /** 添付を作成する。順序: スプール→Blob行→実体put→Attachment行。 */
@@ -19,12 +22,12 @@ public class AktiveStorage(
         name: String,
         content: ContentSource,
     ): Attachment {
-        val spooled = spool(content)
+        val spooled = spool(content, checksum)
         try {
             val key = keyGenerator.generate(KeyContext(spooled.filename, spooled.contentType, record))
             val blob =
                 Blob(
-                    id = BlobId(UUID.randomUUID().toString()),
+                    id = BlobId(Uuid.random().toString()),
                     key = key,
                     filename = spooled.filename,
                     contentType = spooled.contentType,
@@ -42,7 +45,7 @@ public class AktiveStorage(
             }
             val attachment =
                 Attachment(
-                    id = AttachmentId(UUID.randomUUID().toString()),
+                    id = AttachmentId(Uuid.random().toString()),
                     name = name,
                     record = record,
                     blobId = blob.id,
