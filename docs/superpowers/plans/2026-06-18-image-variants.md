@@ -1249,7 +1249,7 @@ git commit -m "feat: add variant-scrimage adapter (Scrimage VariantProcessor)"
 - [ ] **Step 1: apiDump を再生成**
 
 Run: `./gradlew apiDump`
-Expected: `core` に `Variation` / `Transform` / `VariantProcessor` / enum 群と `AktiveStorage.variant` / コンストラクタ変更、`MetadataStore` の 4 メソッドが反映。`variant-scrimage/api/variant-scrimage.api` が新規生成。`metadata-exposed-jdbc` は内部実装のみのため差分が出ないこと（出たら確認）。
+Expected: `core` に `Variation` / `Transform` / `VariantProcessor` / enum 群と `AktiveStorage.variant` / コンストラクタ変更、`MetadataStore` の 4 メソッドが反映。`metadata-exposed-jdbc/api/metadata-exposed-jdbc.api` に `ExposedMetadataStore` の 4 override メソッド（`findVariant` / `insertVariant` / `findVariantsOf` / `deleteVariantsOf`、value class 引数のため `-` サフィックス付き）が追加される。`variant-scrimage/api/variant-scrimage.api` が新規生成。いずれも追加のみで意図しない削除・変更が無いこと。
 
 - [ ] **Step 2: 差分をレビュー**
 
