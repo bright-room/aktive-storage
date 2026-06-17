@@ -1,6 +1,6 @@
 public final class net/brightroom/aktivestorage/AktiveStorage {
-	public fun <init> (Lnet/brightroom/aktivestorage/StorageService;Lnet/brightroom/aktivestorage/MetadataStore;Lnet/brightroom/aktivestorage/ReferenceSigner;Lnet/brightroom/aktivestorage/KeyGenerator;Lkotlin/time/Clock;)V
-	public synthetic fun <init> (Lnet/brightroom/aktivestorage/StorageService;Lnet/brightroom/aktivestorage/MetadataStore;Lnet/brightroom/aktivestorage/ReferenceSigner;Lnet/brightroom/aktivestorage/KeyGenerator;Lkotlin/time/Clock;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lnet/brightroom/aktivestorage/StorageService;Lnet/brightroom/aktivestorage/MetadataStore;Lnet/brightroom/aktivestorage/ReferenceSigner;Lnet/brightroom/aktivestorage/KeyGenerator;Lnet/brightroom/aktivestorage/Checksum;Lkotlin/time/Clock;)V
+	public synthetic fun <init> (Lnet/brightroom/aktivestorage/StorageService;Lnet/brightroom/aktivestorage/MetadataStore;Lnet/brightroom/aktivestorage/ReferenceSigner;Lnet/brightroom/aktivestorage/KeyGenerator;Lnet/brightroom/aktivestorage/Checksum;Lkotlin/time/Clock;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun attach (Lnet/brightroom/aktivestorage/RecordRef;Ljava/lang/String;Lnet/brightroom/aktivestorage/ContentSource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun attachments (Lnet/brightroom/aktivestorage/RecordRef;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun blobOf (Lnet/brightroom/aktivestorage/Attachment;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -85,6 +85,10 @@ public final class net/brightroom/aktivestorage/BlobId {
 	public final synthetic fun unbox-impl ()Ljava/lang/String;
 }
 
+public abstract interface class net/brightroom/aktivestorage/Checksum {
+	public abstract fun newHasher ()Lnet/brightroom/aktivestorage/Hasher;
+}
+
 public abstract interface class net/brightroom/aktivestorage/ContentSource {
 	public static final field Companion Lnet/brightroom/aktivestorage/ContentSource$Companion;
 	public abstract fun getContentType ()Ljava/lang/String;
@@ -123,6 +127,16 @@ public final class net/brightroom/aktivestorage/Delivery$Redirect : net/brightro
 	public fun toString ()Ljava/lang/String;
 }
 
+public abstract interface class net/brightroom/aktivestorage/Hasher {
+	public abstract fun digest ()[B
+	public abstract fun update ([BII)V
+	public static synthetic fun update$default (Lnet/brightroom/aktivestorage/Hasher;[BIIILjava/lang/Object;)V
+}
+
+public final class net/brightroom/aktivestorage/Hasher$DefaultImpls {
+	public static synthetic fun update$default (Lnet/brightroom/aktivestorage/Hasher;[BIIILjava/lang/Object;)V
+}
+
 public final class net/brightroom/aktivestorage/HmacReferenceSigner : net/brightroom/aktivestorage/ReferenceSigner {
 	public static final field ALGORITHM Ljava/lang/String;
 	public fun <init> ([BLkotlin/time/Clock;)V
@@ -148,6 +162,11 @@ public final class net/brightroom/aktivestorage/KeyContext {
 
 public abstract interface class net/brightroom/aktivestorage/KeyGenerator {
 	public abstract fun generate (Lnet/brightroom/aktivestorage/KeyContext;)Ljava/lang/String;
+}
+
+public final class net/brightroom/aktivestorage/Md5Checksum : net/brightroom/aktivestorage/Checksum {
+	public fun <init> ()V
+	public fun newHasher ()Lnet/brightroom/aktivestorage/Hasher;
 }
 
 public abstract interface class net/brightroom/aktivestorage/MetadataStore {
