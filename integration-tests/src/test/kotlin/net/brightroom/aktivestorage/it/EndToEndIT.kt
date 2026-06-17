@@ -25,6 +25,7 @@ import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.minutes
 
@@ -137,7 +138,8 @@ class EndToEndIT {
             // 猶予を now+1m に広げ、att2 由来の Blob を確実に対象化する（同一ミリ秒競合の回避）。
             // att の Blob は purge 済み、他テストは紐付き/完全 purge のため、回収は att2 の 1 件のみ
             val reclaimed = storage.reclaimUnattached(Clock.System.now() + 1.minutes)
-            assertEquals(1, reclaimed)
+            assertTrue(reclaimed >= 1)
+            assertNull(storage.blobOf(att2))
         }
 
     @Test

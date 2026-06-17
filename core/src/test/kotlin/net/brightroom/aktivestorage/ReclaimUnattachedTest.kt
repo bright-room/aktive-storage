@@ -53,4 +53,24 @@ class ReclaimUnattachedTest {
             assertTrue(s.exists("k-att"))
             assertNotNull(m.findBlob(BlobId("att")))
         }
+
+    @Test
+    fun `reclaimUnattached skips blobs owned by another service`() =
+        runTest {
+            val m = InMemoryMetadataStore()
+            val s = InMemoryStorageService() // name = "memory"
+            val st = sut(s, m)
+
+            // このサービス所有の孤立（対象）
+            m.insertBlob(Blob(BlobId("mine"), "k-mine", "f", "image/png", 1, "c", "memory", Instant.fromEpochMilliseconds(100)))
+            s.objects["k-mine"] = "x".encodeToByteArray()
+            // 別サービス所有の孤立（対象外。実体はこの service には無い）
+            m.insertBlob(Blob(BlobId("theirs"), "k-theirs", "f", "image/png", 1, "c", "other", Instant.fromEpochMilliseconds(100)))
+
+            val reclaimed = st.reclaimUnattached(Instant.fromEpochMilliseconds(1000))
+
+            assertEquals(1, reclaimed)
+            assertNull(m.findBlob(BlobId("mine"))) // 自サービス分は回収
+            assertNotNull(m.findBlob(BlobId("theirs"))) // 別サービス分は残る
+        }
 }

@@ -86,11 +86,13 @@ public class AktiveStorage(
      * 実体 → Blob 行 の順で削除する。途中失敗時は例外を伝播し、削除済み分は確定する
      * （冪等 delete 前提で再実行すれば残りを処理して収束する）。
      * いつ走らせるかは利用者の責務（このライブラリは job を持たない）。
+     * このサービス（`service.name`）が所有する Blob のみを対象とする（共有 MetadataStore で他サービスの Blob を消さない）。
      */
     public suspend fun reclaimUnattached(olderThan: Instant): Int {
         val orphans = metadata.findUnattachedBlobs(olderThan)
         var reclaimed = 0
         for (blob in orphans) {
+            if (blob.serviceName != service.name) continue
             service.delete(blob.key)
             metadata.deleteBlob(blob.id)
             reclaimed++
