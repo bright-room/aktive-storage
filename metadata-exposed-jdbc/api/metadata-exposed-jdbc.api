@@ -4,11 +4,15 @@ public final class net/brightroom/aktivestorage/metadata/exposed/ExposedMetadata
 	public final fun createSchema ()V
 	public fun deleteAttachment-wzXLxV0 (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun deleteBlob-K4yIXZU (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun deleteVariantsOf-K4yIXZU (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun findAttachments (Lnet/brightroom/aktivestorage/RecordRef;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun findAttachmentsForRecord (Lnet/brightroom/aktivestorage/RecordRef;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun findBlob-K4yIXZU (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun findUnattachedBlobs (Lkotlin/time/Instant;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun findVariant-fp3f6iE (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun findVariantsOf-K4yIXZU (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun insertAttachment (Lnet/brightroom/aktivestorage/Attachment;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun insertBlob (Lnet/brightroom/aktivestorage/Blob;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun insertVariant-d_QTsiE (Ljava/lang/String;Ljava/lang/String;Lnet/brightroom/aktivestorage/Blob;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
