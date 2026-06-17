@@ -1,5 +1,9 @@
 package net.brightroom.aktivestorage
 
+import kotlinx.io.buffered
+import kotlinx.io.readByteArray
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -7,13 +11,14 @@ import kotlin.time.Instant
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
-@OptIn(ExperimentalUuidApi::class)
+@OptIn(ExperimentalUuidApi::class, ExperimentalEncodingApi::class)
 public class AktiveStorage(
     private val service: StorageService,
     private val metadata: MetadataStore,
     private val signer: ReferenceSigner,
     private val keyGenerator: KeyGenerator = RandomTokenKeyGenerator(),
     private val checksum: Checksum = Md5Checksum(),
+    private val variantProcessor: VariantProcessor? = null,
     private val clock: Clock = Clock.System,
 ) {
     /** 添付を作成する。順序: スプール→Blob行→実体put→Attachment行。 */
@@ -65,6 +70,48 @@ public class AktiveStorage(
 
     /** 添付に対応する Blob を引く。 */
     public suspend fun blobOf(attachment: Attachment): Blob? = metadata.findBlob(attachment.blobId)
+
+    /**
+     * blob に variation を適用した派生 Blob を返す（遅延生成）。
+     * 既存の variant 記録があればそれを返し、無ければ生成→実体保存→記録して返す。
+     * 戻りは通常の Blob で、既存の署名参照/配信経路にそのまま乗る。
+     * variantProcessor 未注入時は IllegalStateException。
+     */
+    public suspend fun variant(
+        blob: Blob,
+        variation: Variation,
+    ): Blob {
+        val processor =
+            variantProcessor
+                ?: error("variant() requires a VariantProcessor; none was injected")
+        val digest = digestOf(variation)
+        metadata.findVariant(blob.id, digest)?.let { return it }
+
+        val originBytes = service.get(blob.key).buffered().use { it.readByteArray() }
+        val origin = ContentSource.ofBytes(blob.filename, blob.contentType, originBytes)
+        val processed = processor.process(origin, variation)
+
+        val spooled = spool(processed, checksum)
+        try {
+            val key = "${blob.key}/variants/$digest"
+            val variantBlob =
+                Blob(
+                    id = BlobId(Uuid.random().toString()),
+                    key = key,
+                    filename = spooled.filename,
+                    contentType = spooled.contentType,
+                    byteSize = spooled.byteSize,
+                    checksum = spooled.checksumBase64,
+                    serviceName = service.name,
+                    createdAt = clock.now(),
+                )
+            service.put(key, spooled, ObjectMetadata(variantBlob.contentType, variantBlob.byteSize, variantBlob.checksum))
+            metadata.insertVariant(blob.id, digest, variantBlob)
+            return variantBlob
+        } finally {
+            spooled.cleanup()
+        }
+    }
 
     /**
      * 添付を外す。purgeBlob=true でも、その Blob を参照する他の Attachment が
@@ -132,4 +179,9 @@ public class AktiveStorage(
         val url = service.presignedGetUrl(blob.key, redirectTtl)
         return if (url != null) Delivery.Redirect(url) else Delivery.Proxy(blob, service.get(blob.key))
     }
+
+    private fun digestOf(variation: Variation): String =
+        Base64.UrlSafe
+            .withPadding(Base64.PaddingOption.ABSENT)
+            .encode(checksum.newHasher().also { it.update(variation.canonicalForm.encodeToByteArray()) }.digest())
 }
