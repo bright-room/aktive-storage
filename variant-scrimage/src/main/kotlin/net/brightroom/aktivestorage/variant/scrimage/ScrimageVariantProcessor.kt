@@ -24,7 +24,7 @@ public class ScrimageVariantProcessor : VariantProcessor {
         variation: Variation,
     ): ContentSource =
         withContext(Dispatchers.IO) {
-            val bytes = source.open().buffered().readByteArray()
+            val bytes = source.open().buffered().use { it.readByteArray() }
             var image = ImmutableImage.loader().fromBytes(bytes)
 
             var targetFormat = formatOf(source.contentType)
@@ -105,7 +105,10 @@ public class ScrimageVariantProcessor : VariantProcessor {
     ): ByteArray =
         when (format) {
             ImageFormat.JPEG -> bytes(JpegWriter().withCompression(quality ?: 80))
+
+            // PNG は可逆圧縮のため quality は非適用（常に MaxCompression）
             ImageFormat.PNG -> bytes(PngWriter.MaxCompression)
+
             ImageFormat.WEBP -> bytes(quality?.let { WebpWriter.DEFAULT.withQ(it) } ?: WebpWriter.DEFAULT)
         }
 
