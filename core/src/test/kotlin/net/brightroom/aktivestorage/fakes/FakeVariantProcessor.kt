@@ -3,8 +3,8 @@ package net.brightroom.aktivestorage.fakes
 import kotlinx.io.buffered
 import kotlinx.io.readByteArray
 import net.brightroom.aktivestorage.ContentSource
-import net.brightroom.aktivestorage.Variation
 import net.brightroom.aktivestorage.VariantProcessor
+import net.brightroom.aktivestorage.Variation
 
 /** 入力バイト列に "+variant" を付すだけのフェイク。process 呼び出し回数を数える。 */
 class FakeVariantProcessor : VariantProcessor {

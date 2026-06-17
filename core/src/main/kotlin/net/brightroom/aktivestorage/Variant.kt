@@ -24,15 +24,28 @@ public enum class ImageFormat { JPEG, PNG, WEBP }
 
 /** 変換操作。 */
 public sealed interface Transform {
-    public data class Resize(val width: Int?, val height: Int?, val mode: ResizeMode) : Transform
+    public data class Resize(
+        val width: Int?,
+        val height: Int?,
+        val mode: ResizeMode,
+    ) : Transform
 
-    public data class Crop(val width: Int, val height: Int, val gravity: Gravity) : Transform
+    public data class Crop(
+        val width: Int,
+        val height: Int,
+        val gravity: Gravity,
+    ) : Transform
 
-    public data class Rotate(val degrees: Int) : Transform
+    public data class Rotate(
+        val degrees: Int,
+    ) : Transform
 
     public data object Grayscale : Transform
 
-    public data class Convert(val format: ImageFormat, val quality: Int?) : Transform
+    public data class Convert(
+        val format: ImageFormat,
+        val quality: Int?,
+    ) : Transform
 }
 
 /** 変換操作の順序付き列。決定的な canonicalForm を持つ。 */

@@ -24,7 +24,10 @@ class VariantCascadeTest {
         metadata = metadata,
         signer = HmacReferenceSigner("k".encodeToByteArray()),
         variantProcessor = FakeVariantProcessor(),
-        clock = object : Clock { override fun now(): Instant = fixedNow },
+        clock =
+            object : Clock {
+                override fun now(): Instant = fixedNow
+            },
     )
 
     private suspend fun attachWithVariant(
