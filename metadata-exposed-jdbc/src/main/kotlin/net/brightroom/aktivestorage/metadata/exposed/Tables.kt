@@ -26,5 +26,6 @@ internal object AttachmentsTable : Table("aktive_attachments") {
 
     init {
         index(false, recordType, recordId, name)
+        index(false, blobId)
     }
 }

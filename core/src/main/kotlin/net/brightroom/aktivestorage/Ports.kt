@@ -19,6 +19,7 @@ public interface StorageService {
 
     public suspend fun exists(key: String): Boolean
 
+    /** キーに対応する実体を削除する。存在しないキーに対しては no-op（冪等）。 */
     public suspend fun delete(key: String)
 
     /** presigned GET URL。非対応（fs 等）は null。 */
@@ -44,6 +45,15 @@ public interface MetadataStore {
     ): List<Attachment>
 
     public suspend fun deleteAttachment(id: AttachmentId)
+
+    /** ある Blob を参照する Attachment 数。参照カウント安全 purge と孤立判定の基盤。 */
+    public suspend fun countAttachmentsForBlob(blobId: BlobId): Int
+
+    /** 参照ゼロ かつ createdAt < olderThan の Blob。olderThan の猶予で進行中 attach を除外する。 */
+    public suspend fun findUnattachedBlobs(olderThan: Instant): List<Blob>
+
+    /** name を問わずレコードの全添付。レコード削除との連動（一括 purge）に使う。 */
+    public suspend fun findAttachmentsForRecord(record: RecordRef): List<Attachment>
 }
 
 /** ストレージキー生成ストラテジ。 */

@@ -11,6 +11,8 @@ import net.brightroom.aktivestorage.RecordRef
 import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.isNull
+import org.jetbrains.exposed.v1.core.less
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
@@ -88,6 +90,34 @@ public class ExposedMetadataStore(
         dbQuery {
             AttachmentsTable.deleteWhere { AttachmentsTable.id eq id.value }
             Unit
+        }
+
+    override suspend fun countAttachmentsForBlob(blobId: BlobId): Int =
+        dbQuery {
+            AttachmentsTable
+                .selectAll()
+                .where { AttachmentsTable.blobId eq blobId.value }
+                .count()
+                .toInt()
+        }
+
+    override suspend fun findUnattachedBlobs(olderThan: Instant): List<Blob> =
+        dbQuery {
+            val cutoff = olderThan.toEpochMilliseconds()
+            (BlobsTable leftJoin AttachmentsTable)
+                .selectAll()
+                .where { AttachmentsTable.id.isNull() and (BlobsTable.createdAt less cutoff) }
+                .map { it.toBlob() }
+        }
+
+    override suspend fun findAttachmentsForRecord(record: RecordRef): List<Attachment> =
+        dbQuery {
+            AttachmentsTable
+                .selectAll()
+                .where {
+                    (AttachmentsTable.recordType eq record.type) and
+                        (AttachmentsTable.recordId eq record.id)
+                }.map { it.toAttachment() }
         }
 
     private suspend fun <T> dbQuery(block: () -> T): T = withContext(Dispatchers.IO) { transaction(db) { block() } }

@@ -6,6 +6,8 @@ public final class net/brightroom/aktivestorage/AktiveStorage {
 	public final fun blobOf (Lnet/brightroom/aktivestorage/Attachment;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun detach (Lnet/brightroom/aktivestorage/Attachment;ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun detach$default (Lnet/brightroom/aktivestorage/AktiveStorage;Lnet/brightroom/aktivestorage/Attachment;ZLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public final fun purgeRecord (Lnet/brightroom/aktivestorage/RecordRef;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun reclaimUnattached (Lkotlin/time/Instant;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun resolveForDelivery-8Mi8wO0 (Ljava/lang/String;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun resolveForDelivery-8Mi8wO0$default (Lnet/brightroom/aktivestorage/AktiveStorage;Ljava/lang/String;JLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public final fun signedReference-HG0u8IE (Lnet/brightroom/aktivestorage/Blob;J)Ljava/lang/String;
@@ -149,10 +151,13 @@ public abstract interface class net/brightroom/aktivestorage/KeyGenerator {
 }
 
 public abstract interface class net/brightroom/aktivestorage/MetadataStore {
+	public abstract fun countAttachmentsForBlob-K4yIXZU (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun deleteAttachment-wzXLxV0 (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun deleteBlob-K4yIXZU (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun findAttachments (Lnet/brightroom/aktivestorage/RecordRef;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun findAttachmentsForRecord (Lnet/brightroom/aktivestorage/RecordRef;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun findBlob-K4yIXZU (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun findUnattachedBlobs (Lkotlin/time/Instant;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun insertAttachment (Lnet/brightroom/aktivestorage/Attachment;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun insertBlob (Lnet/brightroom/aktivestorage/Blob;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }

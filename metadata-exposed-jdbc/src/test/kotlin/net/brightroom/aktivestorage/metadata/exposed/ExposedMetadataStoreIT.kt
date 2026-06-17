@@ -7,8 +7,11 @@ import net.brightroom.aktivestorage.Blob
 import net.brightroom.aktivestorage.BlobId
 import net.brightroom.aktivestorage.RecordRef
 import org.jetbrains.exposed.v1.jdbc.Database
+import org.jetbrains.exposed.v1.jdbc.deleteAll
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -21,6 +24,7 @@ import kotlin.time.Instant
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ExposedMetadataStoreIT {
     private lateinit var pg: PostgreSQLContainer<*>
+    private lateinit var db: Database
     private lateinit var store: ExposedMetadataStore
 
     private fun blob(
@@ -40,8 +44,16 @@ class ExposedMetadataStoreIT {
     @BeforeAll
     fun setup() {
         pg = PostgreSQLContainer("postgres:17").also { it.start() }
-        val db = Database.connect(pg.jdbcUrl, user = pg.username, password = pg.password)
+        db = Database.connect(pg.jdbcUrl, user = pg.username, password = pg.password)
         store = ExposedMetadataStore(db).also { it.createSchema() }
+    }
+
+    @BeforeEach
+    fun clean() {
+        transaction(db) {
+            AttachmentsTable.deleteAll()
+            BlobsTable.deleteAll()
+        }
     }
 
     @AfterAll
@@ -68,5 +80,61 @@ class ExposedMetadataStoreIT {
             assertEquals(0, store.findAttachments(record, "documents").size)
             store.deleteAttachment(AttachmentId("a1"))
             assertEquals(0, store.findAttachments(record, "avatar").size)
+        }
+
+    @Test
+    fun `countAttachmentsForBlob counts only matching attachments`() =
+        runBlocking {
+            store.insertBlob(blob("bc", "kc"))
+            val record = RecordRef("User", "count")
+            store.insertAttachment(Attachment(AttachmentId("ac1"), "avatar", record, BlobId("bc"), Instant.fromEpochMilliseconds(0)))
+            store.insertAttachment(Attachment(AttachmentId("ac2"), "cover", record, BlobId("bc"), Instant.fromEpochMilliseconds(0)))
+            assertEquals(2, store.countAttachmentsForBlob(BlobId("bc")))
+
+            store.deleteAttachment(AttachmentId("ac1"))
+            assertEquals(1, store.countAttachmentsForBlob(BlobId("bc")))
+
+            assertEquals(0, store.countAttachmentsForBlob(BlobId("no-such-blob")))
+        }
+
+    @Test
+    fun `findUnattachedBlobs returns only old blobs with no attachment`() =
+        runBlocking {
+            // 古い孤立 Blob（createdAt=100, 参照なし）
+            store.insertBlob(
+                Blob(BlobId("u-old"), "ku-old", "f", "image/png", 1, "c", "s3", Instant.fromEpochMilliseconds(100)),
+            )
+            // 新しい孤立 Blob（createdAt=5000, 参照なし → 猶予内なので対象外）
+            store.insertBlob(
+                Blob(BlobId("u-new"), "ku-new", "f", "image/png", 1, "c", "s3", Instant.fromEpochMilliseconds(5000)),
+            )
+            // 古いが紐付きの Blob（createdAt=100, 参照あり → 対象外）
+            store.insertBlob(
+                Blob(BlobId("u-att"), "ku-att", "f", "image/png", 1, "c", "s3", Instant.fromEpochMilliseconds(100)),
+            )
+            store.insertAttachment(
+                Attachment(AttachmentId("ua1"), "avatar", RecordRef("User", "u"), BlobId("u-att"), Instant.fromEpochMilliseconds(100)),
+            )
+
+            val found = store.findUnattachedBlobs(Instant.fromEpochMilliseconds(1000)).map { it.id.value }.toSet()
+
+            assertEquals(setOf("u-old"), found)
+        }
+
+    @Test
+    fun `findAttachmentsForRecord returns all names for the record only`() =
+        runBlocking {
+            store.insertBlob(blob("br1", "kr1"))
+            store.insertBlob(blob("br2", "kr2"))
+            store.insertBlob(blob("br3", "kr3"))
+            val target = RecordRef("User", "rec")
+            val other = RecordRef("User", "other")
+            store.insertAttachment(Attachment(AttachmentId("ar1"), "avatar", target, BlobId("br1"), Instant.fromEpochMilliseconds(0)))
+            store.insertAttachment(Attachment(AttachmentId("ar2"), "cover", target, BlobId("br2"), Instant.fromEpochMilliseconds(0)))
+            store.insertAttachment(Attachment(AttachmentId("ar3"), "avatar", other, BlobId("br3"), Instant.fromEpochMilliseconds(0)))
+
+            val names = store.findAttachmentsForRecord(target).map { it.name }.toSet()
+
+            assertEquals(setOf("avatar", "cover"), names)
         }
 }
