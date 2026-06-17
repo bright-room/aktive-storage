@@ -70,3 +70,23 @@ public interface ReferenceSigner {
 
     public fun verify(token: String): BlobId?
 }
+
+/** ストリーミング・チェックサム生成。content を一括ロードせず逐次更新できること。 */
+public fun interface Checksum {
+    public fun newHasher(): Hasher
+}
+
+/** 逐次更新できるハッシャ。生バイトの digest を返し、符号化は呼び出し側に委ねる。 */
+public interface Hasher {
+    public fun update(
+        source: ByteArray,
+        startIndex: Int = 0,
+        endIndex: Int = source.size,
+    )
+
+    /**
+     * 蓄積したバイト列のダイジェストを返す。一度だけ呼ぶこと。
+     * 呼び出し後の状態は実装依存（リセットされる場合がある）。
+     */
+    public fun digest(): ByteArray
+}
