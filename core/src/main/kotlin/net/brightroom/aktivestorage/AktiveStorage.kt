@@ -67,6 +67,8 @@ public class AktiveStorage(
      * 添付を外す。purgeBlob=true でも、その Blob を参照する他の Attachment が
      * 残っている場合は Blob 行・実体を残す（参照カウント安全）。
      * 実体 → Blob 行 の順で削除し、冪等 delete 前提で再実行可能にする。
+     * purge は自サービス（`service.name`）所有の Blob のみ。他サービス所有の
+     * Blob は実体・行を残す（所有サービスの `reclaimUnattached` が回収する）。
      */
     public suspend fun detach(
         attachment: Attachment,
@@ -76,6 +78,7 @@ public class AktiveStorage(
         if (!purgeBlob) return
         if (metadata.countAttachmentsForBlob(attachment.blobId) > 0) return
         val blob = metadata.findBlob(attachment.blobId) ?: return
+        if (blob.serviceName != service.name) return
         service.delete(blob.key)
         metadata.deleteBlob(blob.id)
     }

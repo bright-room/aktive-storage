@@ -4,6 +4,7 @@ import kotlinx.coroutines.test.runTest
 import net.brightroom.aktivestorage.fakes.InMemoryMetadataStore
 import net.brightroom.aktivestorage.fakes.InMemoryStorageService
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -33,6 +34,27 @@ class DetachRefCountTest {
 
             assertNotNull(m.findBlob(blob.id))
             assertTrue(s.exists(blob.key))
+        }
+
+    @Test
+    fun `detach skips purge for a blob owned by another service`() =
+        runTest {
+            val m = InMemoryMetadataStore()
+            val s = InMemoryStorageService() // name = "memory"
+            val st = sut(s, m)
+            // 別サービス("other")所有の Blob とその実体・関連を用意
+            val blob = Blob(BlobId("foreign"), "k-foreign", "f.png", "image/png", 1, "c", "other", Instant.fromEpochMilliseconds(0))
+            m.insertBlob(blob)
+            s.objects["k-foreign"] = "x".encodeToByteArray()
+            val att = Attachment(AttachmentId("af"), "avatar", record, blob.id, Instant.fromEpochMilliseconds(0))
+            m.insertAttachment(att)
+
+            st.detach(att, purgeBlob = true)
+
+            // 関連は外れるが、他サービス所有の Blob 行・実体は残る
+            assertEquals(0, m.attachments.size)
+            assertNotNull(m.findBlob(blob.id))
+            assertTrue(s.exists("k-foreign"))
         }
 
     @Test
