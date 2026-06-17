@@ -27,6 +27,12 @@ class VariationTest {
     }
 
     @Test
+    fun `resize with null width encodes underscore`() {
+        val v = Variation.of(Transform.Resize(null, 150, ResizeMode.FIT))
+        assertEquals("resize:_x150:FIT", v.canonicalForm)
+    }
+
+    @Test
     fun `canonicalForm is stable golden value`() {
         val v = Variation.of(Transform.Resize(200, null, ResizeMode.LIMIT), Transform.Convert(ImageFormat.WEBP, null))
         assertEquals("resize:200x_:LIMIT|convert:WEBP:q_", v.canonicalForm)

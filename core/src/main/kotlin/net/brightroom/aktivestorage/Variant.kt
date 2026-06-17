@@ -44,7 +44,7 @@ public class Variation private constructor(
 
     private fun Transform.canonical(): String =
         when (this) {
-            is Transform.Resize -> "resize:${width ?: ""}x${height ?: "_"}:$mode"
+            is Transform.Resize -> "resize:${width ?: "_"}x${height ?: "_"}:$mode"
             is Transform.Crop -> "crop:${width}x$height:$gravity"
             is Transform.Rotate -> "rotate:$degrees"
             Transform.Grayscale -> "grayscale"
