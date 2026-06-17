@@ -49,11 +49,30 @@ public interface MetadataStore {
     /** ある Blob を参照する Attachment 数。参照カウント安全 purge と孤立判定の基盤。 */
     public suspend fun countAttachmentsForBlob(blobId: BlobId): Int
 
-    /** 参照ゼロ かつ createdAt < olderThan の Blob。olderThan の猶予で進行中 attach を除外する。 */
+    /** 参照ゼロ かつ createdAt < olderThan の Blob。派生（variant）Blob は対象外。olderThan の猶予で進行中 attach を除外する。 */
     public suspend fun findUnattachedBlobs(olderThan: Instant): List<Blob>
 
     /** name を問わずレコードの全添付。レコード削除との連動（一括 purge）に使う。 */
     public suspend fun findAttachmentsForRecord(record: RecordRef): List<Attachment>
+
+    /** (元 Blob, variation digest) に対応する派生 Blob。無ければ null。 */
+    public suspend fun findVariant(
+        originBlobId: BlobId,
+        variationDigest: String,
+    ): Blob?
+
+    /** 派生 Blob 行と variant 記録を 1 トランザクションで挿入する。 */
+    public suspend fun insertVariant(
+        originBlobId: BlobId,
+        variationDigest: String,
+        variant: Blob,
+    )
+
+    /** ある元 Blob に紐づく全派生 Blob。カスケード削除に使う。 */
+    public suspend fun findVariantsOf(originBlobId: BlobId): List<Blob>
+
+    /** ある元 Blob の variant 記録と派生 Blob 行をまとめて削除する（実体削除は呼び出し側）。 */
+    public suspend fun deleteVariantsOf(originBlobId: BlobId)
 }
 
 /** ストレージキー生成ストラテジ。 */
