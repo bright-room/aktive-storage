@@ -5,9 +5,10 @@ import kotlinx.io.buffered
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
 import kotlinx.io.files.SystemTemporaryDirectory
-import java.security.MessageDigest
-import java.util.Base64
-import java.util.UUID
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 /** 一時ファイルへスプールしつつ byteSize と base64(MD5) を確定する。 */
 internal class SpooledContent(
@@ -24,9 +25,13 @@ internal class SpooledContent(
     }
 }
 
-internal fun spool(content: ContentSource): SpooledContent {
-    val tempFile = Path(SystemTemporaryDirectory, "aktive-${UUID.randomUUID()}.tmp")
-    val digest = MessageDigest.getInstance("MD5")
+@OptIn(ExperimentalUuidApi::class, ExperimentalEncodingApi::class)
+internal fun spool(
+    content: ContentSource,
+    checksum: Checksum,
+): SpooledContent {
+    val tempFile = Path(SystemTemporaryDirectory, "aktive-${Uuid.random()}.tmp")
+    val hasher = checksum.newHasher()
     val chunk = ByteArray(8192)
     var byteSize = 0L
     try {
@@ -35,14 +40,14 @@ internal fun spool(content: ContentSource): SpooledContent {
                 while (true) {
                     val n = src.readAtMostTo(chunk, 0, chunk.size)
                     if (n == -1) break
-                    digest.update(chunk, 0, n)
+                    hasher.update(chunk, 0, n)
                     sink.write(chunk, 0, n)
                     byteSize += n
                 }
             }
         }
-        val checksum = Base64.getEncoder().encodeToString(digest.digest())
-        return SpooledContent(tempFile, byteSize, checksum, content.filename, content.contentType)
+        val checksumBase64 = Base64.Default.encode(hasher.digest())
+        return SpooledContent(tempFile, byteSize, checksumBase64, content.filename, content.contentType)
     } catch (e: Throwable) {
         SystemFileSystem.delete(tempFile, mustExist = false)
         throw e

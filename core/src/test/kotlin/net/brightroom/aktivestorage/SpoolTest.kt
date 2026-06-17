@@ -19,7 +19,7 @@ class SpoolTest {
         val bytes = ByteArray(size) { (it % 251).toByte() }
         val content = ContentSource.ofBytes("big.bin", "application/octet-stream", bytes)
 
-        val spooled = spool(content)
+        val spooled = spool(content, Md5Checksum())
         try {
             assertEquals(size.toLong(), spooled.byteSize)
 
@@ -62,7 +62,7 @@ class SpoolTest {
                     }
             }
 
-        assertFailsWith<IOException> { spool(failing) }
+        assertFailsWith<IOException> { spool(failing, Md5Checksum()) }
         assertEquals(before, spoolTemps(), "spool must not leave a temp file behind on failure")
     }
 }
