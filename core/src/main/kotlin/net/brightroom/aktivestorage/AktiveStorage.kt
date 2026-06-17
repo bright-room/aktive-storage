@@ -76,6 +76,14 @@ public class AktiveStorage(
      * 既存の variant 記録があればそれを返し、無ければ生成→実体保存→記録して返す。
      * 戻りは通常の Blob で、既存の署名参照/配信経路にそのまま乗る。
      * variantProcessor 未注入時は IllegalStateException。
+     *
+     * 派生は生成元（このインスタンス）の `service` に保存され、purge/reclaim も同 `service` で行う。
+     * よって variant は **元 Blob を所有するサービス上で生成すること**。他サービス所有の元に対して
+     * 生成すると、カスケード削除時に実体を消せず取り残す（行は消える）。
+     *
+     * 遅延の初回生成は競合しうる（同一 (blob, variation) の同時要求が両方生成に進む）。派生キーは
+     * 決定的なため実体は同一内容で上書きされ無害だが、2 つ目の記録挿入は一意制約違反になりうる。
+     * いつ・どの並行度で呼ぶかは利用者の責務。
      */
     public suspend fun variant(
         blob: Blob,
