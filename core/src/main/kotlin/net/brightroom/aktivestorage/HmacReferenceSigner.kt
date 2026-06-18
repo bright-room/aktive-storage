@@ -12,6 +12,10 @@ public class HmacReferenceSigner(
     secretKey: ByteArray,
     private val clock: Clock = Clock.System,
 ) : ReferenceSigner {
+    init {
+        require(secretKey.size >= 32) { "HMAC secret key must be >= 32 bytes, was ${secretKey.size}" }
+    }
+
     private val keySpec = SecretKeySpec(secretKey, ALGORITHM)
     private val encoder = Base64.getUrlEncoder().withoutPadding()
     private val decoder = Base64.getUrlDecoder()

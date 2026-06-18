@@ -14,7 +14,7 @@ class PurgeRecordTest {
     private fun sut(
         s: InMemoryStorageService,
         m: InMemoryMetadataStore,
-    ) = AktiveStorage(s, m, HmacReferenceSigner("k".encodeToByteArray()))
+    ) = AktiveStorage(s, m, HmacReferenceSigner(ByteArray(32) { 1 }))
 
     @Test
     fun `purgeRecord detaches and purges all attachments of a record`() =

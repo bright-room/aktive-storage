@@ -22,7 +22,7 @@ class VariantCascadeTest {
     ) = AktiveStorage(
         service = service,
         metadata = metadata,
-        signer = HmacReferenceSigner("k".encodeToByteArray()),
+        signer = HmacReferenceSigner(ByteArray(32) { 1 }),
         variantProcessor = FakeVariantProcessor(),
         clock =
             object : Clock {
