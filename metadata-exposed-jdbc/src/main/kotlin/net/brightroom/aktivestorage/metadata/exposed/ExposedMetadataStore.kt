@@ -34,6 +34,7 @@ public class ExposedMetadataStore(
     private fun validateColumns(blob: Blob) {
         require(blob.id.value.length <= 64) { "blob id exceeds 64 chars: ${blob.id.value.length}" }
         require(blob.key.length <= 512) { "storage key exceeds 512 chars: ${blob.key.length}" }
+        require(blob.contentType.length <= 255) { "contentType exceeds 255 chars: ${blob.contentType.length}" }
         require(blob.checksum.length <= 128) { "checksum exceeds 128 chars: ${blob.checksum.length}" }
         require(blob.serviceName.length <= 64) { "serviceName exceeds 64 chars: ${blob.serviceName.length}" }
     }

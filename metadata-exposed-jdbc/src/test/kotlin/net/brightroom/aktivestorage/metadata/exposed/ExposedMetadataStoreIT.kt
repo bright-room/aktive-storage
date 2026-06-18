@@ -49,11 +49,12 @@ class ExposedMetadataStoreIT {
         id: String = UUID.randomUUID().toString(),
         key: String = "key-${UUID.randomUUID()}",
         filename: String = "sample.png",
+        contentType: String = "image/png",
     ) = Blob(
         BlobId(id),
         key,
         filename,
-        "image/png",
+        contentType,
         3,
         "chk",
         "s3",
@@ -206,6 +207,29 @@ class ExposedMetadataStoreIT {
     fun `insertBlob rejects an over-length key with a clear error`() {
         val blob = sampleBlob(key = "k".repeat(513))
         val ex = assertFailsWith<IllegalArgumentException> { runBlocking { store.insertBlob(blob) } }
+        assertTrue(ex.message!!.contains("key"))
+    }
+
+    @Test
+    fun `insertBlob rejects an over-length contentType with a clear error`() {
+        val ex = assertFailsWith<IllegalArgumentException> { runBlocking { store.insertBlob(sampleBlob(contentType = "x".repeat(256))) } }
+        assertTrue(ex.message!!.contains("contentType"))
+    }
+
+    @Test
+    fun `insertVariant rejects an over-length key with a clear error`() {
+        val origin = sampleBlob()
+        runBlocking { store.insertBlob(origin) }
+        val ex =
+            assertFailsWith<IllegalArgumentException> {
+                runBlocking {
+                    store.insertVariant(
+                        origin.id,
+                        "d",
+                        sampleBlob(key = "k".repeat(513)),
+                    )
+                }
+            }
         assertTrue(ex.message!!.contains("key"))
     }
 }
