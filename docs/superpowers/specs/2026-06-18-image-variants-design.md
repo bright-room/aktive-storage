@@ -29,7 +29,7 @@ Rails の ActiveStorage variant 相当の機能を、本ライブラリのポー
 
 ### 1. モジュール構成
 
-```
+```text
 core/                 ← Variation / Transform / VariantProcessor(ポート) / variant() / MetadataStore 拡張
 variant-scrimage/     ← (新規) VariantProcessor の Scrimage 実装。Scrimage 依存はここに隔離
 ```
@@ -46,10 +46,10 @@ public fun interface VariantProcessor {
     public suspend fun process(source: ContentSource, variation: Variation): ContentSource
 }
 
-/** 変換操作の順序付き列。決定的な digest を持つ。 */
+/** 変換操作の順序付き列。決定的な canonicalForm を持つ。digest は AktiveStorage 側で算出する。 */
 public class Variation private constructor(public val transforms: List<Transform>) {
-    /** 操作列の安定したダイジェスト（variant_records のキー・派生ストレージキー導出に使う）。 */
-    public val digest: String
+    /** 操作列の安定した正規化文字列（variant_records のキー・派生ストレージキー導出のハッシュ元）。 */
+    public val canonicalForm: String
 
     public companion object {
         public fun of(vararg transforms: Transform): Variation
@@ -70,7 +70,7 @@ public enum class ImageFormat { JPEG, PNG, WEBP }
 ```
 
 - 入出力を `ContentSource`（既存型: `filename` / `contentType` / `open(): RawSource`）で統一し、`variant()` の保存経路を既存の `spool` + `Checksum` にそのまま乗せる。
-- `Variation.digest` は `transforms` を**正規化文字列化** → 注入済み `Checksum` でハッシュ → base64url（パディング無し・キー安全）で算出する。同じ操作列は常に同じ digest になること。`Checksum` を流用することで新規ハッシュ依存を足さない。
+- `Variation.canonicalForm` は `transforms` の**正規化文字列**。digest は `AktiveStorage.variant()` 内で `canonicalForm` を**注入済み `Checksum` でハッシュ → base64url（パディング無し・キー安全）**で算出する（`Variation` 自身は `Checksum` を持たない）。同じ操作列は常に同じ digest になること。`Checksum` を流用することで新規ハッシュ依存を足さない。
 
 ### 3. `AktiveStorage` の variant 取得 API
 
@@ -95,11 +95,11 @@ public class AktiveStorage(
 
 生成手順（attach の順序規律に倣う：実体保存の前後で行を整合させる）:
 
-1. `metadata.findVariant(blob.id, variation.digest)` を引き、**あれば即返す**（再利用）。
+1. `metadata.findVariant(blob.id, digest)` を引き、**あれば即返す**（再利用）。
 2. 無ければ元実体を `service.get(blob.key)` で開き、`ContentSource` に包んで `variantProcessor.process(origin, variation)` を実行。
 3. 結果を `spool(processed, checksum)` で一時ファイルへ落としつつ checksum / byteSize / contentType / filename を確定。
-4. 派生キーを**元キーから決定的に導出**: `"<blob.key>/variants/<variation.digest>"`（元と co-located、`KeyGenerator` は介さない＝派生物に record は不要）。
-5. 派生 `Blob`（新 `BlobId`、`serviceName = service.name`）を作り、`metadata.insertVariant(blob.id, variation.digest, variantBlob)` で **blob 行 + variant_records を 1 トランザクションで** 記録。実体 `service.put` は記録の前に行い、失敗時は記録しない（attach と同じく「実体先・行後で整合、冪等 delete 前提」）。
+4. 派生キーを**元キーから決定的に導出**: `"<blob.key>/variants/<digest>"`（元と co-located、`KeyGenerator` は介さない＝派生物に record は不要）。
+5. 派生 `Blob`（新 `BlobId`、`serviceName = service.name`）を作り、`metadata.insertVariant(blob.id, digest, variantBlob)` で **blob 行 + variant_records を 1 トランザクションで** 記録。実体 `service.put` は記録の前に行い、失敗時は記録しない（attach と同じく「実体先・行後で整合、冪等 delete 前提」）。
 6. 派生 `Blob` を返す。
 
 - 戻り値は通常の `Blob`。配信は既存 `signedReference(variantBlob, ttl)` → `resolveForDelivery` がそのまま機能する（presigned 対応サービスは Redirect、非対応は Proxy）。**新規配信コードはゼロ。**
@@ -108,7 +108,7 @@ public class AktiveStorage(
 
 スキーマ（派生 Blob は通常どおり `blobs` 表に入れ、対応関係だけ別表で持つ）:
 
-```
+```text
 variant_records
   origin_blob_id    (FK → blobs.id, NOT NULL)
   variation_digest  (NOT NULL)
@@ -116,7 +116,7 @@ variant_records
   PRIMARY KEY (origin_blob_id, variation_digest)
 ```
 
-`MetadataStore` ポート追加（3 メソッド）:
+`MetadataStore` ポート追加（4 メソッド）:
 
 ```kotlin
 /** 既存の variant を引く。無ければ null。 */
@@ -127,6 +127,9 @@ public suspend fun insertVariant(originBlobId: BlobId, variationDigest: String, 
 
 /** ある元 Blob に紐づく全派生 Blob。カスケード削除に使う。 */
 public suspend fun findVariantsOf(originBlobId: BlobId): List<Blob>
+
+/** ある元 Blob の variant 記録と派生 Blob 行をまとめて削除する（実体削除は呼び出し側）。 */
+public suspend fun deleteVariantsOf(originBlobId: BlobId)
 ```
 
 Exposed アダプタ（`metadata-exposed-jdbc`）に `VariantRecords` テーブル定義と上記実装を追加し、`createSchema()` に含める。`InMemoryMetadataStore`（core テスト用フェイク）にも実装を追加。
