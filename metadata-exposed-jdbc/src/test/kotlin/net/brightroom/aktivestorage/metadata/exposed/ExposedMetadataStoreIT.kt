@@ -16,7 +16,9 @@ import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.testcontainers.containers.PostgreSQLContainer
+import java.util.UUID
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -36,6 +38,21 @@ class ExposedMetadataStoreIT {
         BlobId(id),
         key,
         "a.png",
+        "image/png",
+        3,
+        "chk",
+        "s3",
+        Instant.fromEpochMilliseconds(0),
+    )
+
+    private fun sampleBlob(
+        id: String = UUID.randomUUID().toString(),
+        key: String = "key-${UUID.randomUUID()}",
+        filename: String = "sample.png",
+    ) = Blob(
+        BlobId(id),
+        key,
+        filename,
         "image/png",
         3,
         "chk",
@@ -176,4 +193,19 @@ class ExposedMetadataStoreIT {
             assertNull(store.findBlob(BlobId("variant")))
             assertTrue(store.findVariantsOf(BlobId("origin")).isEmpty())
         }
+
+    @Test
+    fun `insertBlob accepts a very long filename`() =
+        runBlocking {
+            val blob = sampleBlob(filename = "a".repeat(5_000))
+            store.insertBlob(blob)
+            assertEquals("a".repeat(5_000), store.findBlob(blob.id)!!.filename)
+        }
+
+    @Test
+    fun `insertBlob rejects an over-length key with a clear error`() {
+        val blob = sampleBlob(key = "k".repeat(513))
+        val ex = assertFailsWith<IllegalArgumentException> { runBlocking { store.insertBlob(blob) } }
+        assertTrue(ex.message!!.contains("key"))
+    }
 }

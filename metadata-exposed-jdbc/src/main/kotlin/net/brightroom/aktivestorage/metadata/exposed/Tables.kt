@@ -6,7 +6,7 @@ import org.jetbrains.exposed.v1.core.Table
 internal object BlobsTable : Table("aktive_blobs") {
     val id = varchar("id", 64)
     val key = varchar("key", 512).uniqueIndex()
-    val filename = varchar("filename", 1024)
+    val filename = text("filename")
     val contentType = varchar("content_type", 255)
     val byteSize = long("byte_size")
     val checksum = varchar("checksum", 128)
