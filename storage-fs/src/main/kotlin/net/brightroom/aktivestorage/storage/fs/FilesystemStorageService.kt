@@ -52,9 +52,17 @@ public class FilesystemStorageService(
 
     private fun resolveSafe(key: String): Path {
         val parts = key.split('/', '\\')
-        require(key.isNotBlank() && parts.none { it == ".." || it == "." || it.isEmpty() }) {
-            "invalid storage key: $key"
+        require(
+            key.isNotBlank() &&
+                key.none { it.isISOControl() } &&
+                parts.none { it == ".." || it == "." || it.isEmpty() },
+        ) { "invalid storage key: $key" }
+        val resolved = Path(root.toString(), *parts.toTypedArray())
+        val rootCanonical = java.io.File(root.toString()).canonicalFile
+        val targetCanonical = java.io.File(resolved.toString()).canonicalFile
+        require(targetCanonical == rootCanonical || targetCanonical.toPath().startsWith(rootCanonical.toPath())) {
+            "storage key escapes root: $key"
         }
-        return Path(root.toString(), *parts.toTypedArray())
+        return resolved
     }
 }
