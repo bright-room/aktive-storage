@@ -48,7 +48,7 @@ internal fun spool(
         }
         val checksumBase64 = Base64.Default.encode(hasher.digest())
         return SpooledContent(tempFile, byteSize, checksumBase64, content.filename, content.contentType)
-    } catch (e: Throwable) {
+    } catch (e: Exception) {
         SystemFileSystem.delete(tempFile, mustExist = false)
         throw e
     }

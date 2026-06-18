@@ -32,7 +32,7 @@ public class FilesystemStorageService(
                     SystemFileSystem.sink(tmp).buffered().use { sink -> sink.transferFrom(src) }
                 }
                 SystemFileSystem.atomicMove(tmp, target)
-            } catch (e: Throwable) {
+            } catch (e: Exception) {
                 SystemFileSystem.delete(tmp, mustExist = false)
                 throw e
             }
