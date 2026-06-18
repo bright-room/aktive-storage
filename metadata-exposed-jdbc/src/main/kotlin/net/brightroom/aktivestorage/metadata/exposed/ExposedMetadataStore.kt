@@ -106,16 +106,16 @@ public class ExposedMetadataStore(
     override suspend fun findUnattachedBlobs(olderThan: Instant): List<Blob> =
         dbQuery {
             val cutoff = olderThan.toEpochMilliseconds()
-            val variantBlobIds =
-                VariantRecordsTable
-                    .selectAll()
-                    .map { it[VariantRecordsTable.variantBlobId] }
-                    .toSet()
+            // 派生（variant）は VariantRecordsTable の二つの FK で曖昧になるため、
+            // variant_blob_id に対する明示 LEFT JOIN で DB 側除外する。
             (BlobsTable leftJoin AttachmentsTable)
+                .join(VariantRecordsTable, JoinType.LEFT, onColumn = BlobsTable.id, otherColumn = VariantRecordsTable.variantBlobId)
                 .selectAll()
-                .where { AttachmentsTable.id.isNull() and (BlobsTable.createdAt less cutoff) }
-                .map { it.toBlob() }
-                .filterNot { it.id.value in variantBlobIds }
+                .where {
+                    AttachmentsTable.id.isNull() and
+                        VariantRecordsTable.variantBlobId.isNull() and
+                        (BlobsTable.createdAt less cutoff)
+                }.map { it.toBlob() }
         }
 
     override suspend fun findAttachmentsForRecord(record: RecordRef): List<Attachment> =

@@ -78,12 +78,12 @@ public class AktiveStorage(
      * variantProcessor 未注入時は IllegalStateException。
      *
      * 派生は生成元（このインスタンス）の `service` に保存され、purge/reclaim も同 `service` で行う。
-     * よって variant は **元 Blob を所有するサービス上で生成すること**。他サービス所有の元に対して
-     * 生成すると、カスケード削除時に実体を消せず取り残す（行は消える）。
+     * よって variant は **元 Blob を所有するサービス上で生成すること**。所有が一致しない場合は
+     * 取得失敗・誤サービス書き込み・削除取り残しを避けるため即座に [IllegalStateException]。
      *
      * 遅延の初回生成は競合しうる（同一 (blob, variation) の同時要求が両方生成に進む）。派生キーは
-     * 決定的なため実体は同一内容で上書きされ無害だが、2 つ目の記録挿入は一意制約違反になりうる。
-     * いつ・どの並行度で呼ぶかは利用者の責務。
+     * 決定的なため実体は同一内容で上書きされ無害で、記録挿入が一意制約で失敗した場合は既存記録を
+     * 引いて返す（収束する）。いつ・どの並行度で呼ぶかは利用者の責務。
      */
     public suspend fun variant(
         blob: Blob,
@@ -92,6 +92,9 @@ public class AktiveStorage(
         val processor =
             variantProcessor
                 ?: error("variant() requires a VariantProcessor; none was injected")
+        check(blob.serviceName == service.name) {
+            "variant() must run on the owning service: blob=${blob.serviceName}, current=${service.name}"
+        }
         val digest = digestOf(variation)
         metadata.findVariant(blob.id, digest)?.let { return it }
 
@@ -114,8 +117,13 @@ public class AktiveStorage(
                     createdAt = clock.now(),
                 )
             service.put(key, spooled, ObjectMetadata(variantBlob.contentType, variantBlob.byteSize, variantBlob.checksum))
-            metadata.insertVariant(blob.id, digest, variantBlob)
-            return variantBlob
+            return try {
+                metadata.insertVariant(blob.id, digest, variantBlob)
+                variantBlob
+            } catch (e: Exception) {
+                // 並行初回生成の競合: 既に記録された派生があればそれを返して収束する。
+                metadata.findVariant(blob.id, digest) ?: throw e
+            }
         } finally {
             spooled.cleanup()
         }

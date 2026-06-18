@@ -95,4 +95,52 @@ class VariantTest {
             val bytes = (delivery as Delivery.Proxy).stream.buffered().readByteArray()
             assertContentEquals("PNG+variant".encodeToByteArray(), bytes)
         }
+
+    @Test
+    fun `variant on a blob owned by another service fails`() =
+        runTest {
+            val service = InMemoryStorageService()
+            val metadata = InMemoryMetadataStore()
+            val sut = storage(service, metadata)
+            val origin = attachImage(sut)
+            val foreign = origin.copy(serviceName = "other")
+
+            assertFailsWith<IllegalStateException> {
+                sut.variant(foreign, Variation.of(Transform.Grayscale))
+            }
+        }
+
+    @Test
+    fun `concurrent insert conflict falls back to the existing variant`() =
+        runTest {
+            val service = InMemoryStorageService()
+            val metadata = InMemoryMetadataStore()
+            // insertVariant が一意制約違反で失敗するが、競合相手が既に記録済みの状況を模す。
+            val racing =
+                object : MetadataStore by metadata {
+                    override suspend fun insertVariant(
+                        originBlobId: BlobId,
+                        variationDigest: String,
+                        variant: Blob,
+                    ) {
+                        // 競合相手の記録を先に入れてから、自分の挿入は失敗させる。
+                        metadata.insertVariant(originBlobId, variationDigest, variant.copy(id = BlobId("winner")))
+                        throw IllegalStateException("duplicate key")
+                    }
+                }
+            val sut = storage(service, metadata)
+            val origin = attachImage(sut)
+            // origin は metadata に登録済み。racing を使う SUT で variant 生成。
+            val racingSut =
+                AktiveStorage(
+                    service = service,
+                    metadata = racing,
+                    signer = HmacReferenceSigner("k".encodeToByteArray()),
+                    variantProcessor = FakeVariantProcessor(),
+                )
+
+            val v = racingSut.variant(origin, Variation.of(Transform.Grayscale))
+
+            assertEquals(BlobId("winner"), v.id)
+        }
 }

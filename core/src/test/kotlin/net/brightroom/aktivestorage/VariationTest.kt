@@ -2,9 +2,29 @@ package net.brightroom.aktivestorage
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNotEquals
 
 class VariationTest {
+    @Test
+    fun `resize rejects non-positive or all-null dimensions`() {
+        assertFailsWith<IllegalArgumentException> { Transform.Resize(0, null, ResizeMode.FIT) }
+        assertFailsWith<IllegalArgumentException> { Transform.Resize(null, -1, ResizeMode.FIT) }
+        assertFailsWith<IllegalArgumentException> { Transform.Resize(null, null, ResizeMode.FIT) }
+    }
+
+    @Test
+    fun `crop rejects non-positive dimensions`() {
+        assertFailsWith<IllegalArgumentException> { Transform.Crop(0, 10, Gravity.CENTER) }
+        assertFailsWith<IllegalArgumentException> { Transform.Crop(10, -5, Gravity.CENTER) }
+    }
+
+    @Test
+    fun `convert rejects out-of-range quality`() {
+        assertFailsWith<IllegalArgumentException> { Transform.Convert(ImageFormat.JPEG, 101) }
+        assertFailsWith<IllegalArgumentException> { Transform.Convert(ImageFormat.WEBP, -1) }
+    }
+
     @Test
     fun `same transforms produce same canonicalForm`() {
         val a = Variation.of(Transform.Resize(100, 100, ResizeMode.FIT), Transform.Grayscale)
