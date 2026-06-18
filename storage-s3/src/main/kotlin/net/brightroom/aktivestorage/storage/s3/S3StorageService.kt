@@ -52,11 +52,11 @@ public class S3StorageService(
                 val body = resp.body ?: error("S3 returned no body for key=$key")
                 body.writeToFile(File(tempFile.toString()))
             }
-        } catch (e: Throwable) {
+            return DeletingFileSource(tempFile)
+        } catch (e: Exception) {
             SystemFileSystem.delete(tempFile, mustExist = false)
             throw e
         }
-        return DeletingFileSource(tempFile)
     }
 
     override suspend fun exists(key: String): Boolean =

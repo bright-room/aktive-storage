@@ -31,8 +31,17 @@ public class ExposedMetadataStore(
         transaction(db) { SchemaUtils.create(BlobsTable, AttachmentsTable, VariantRecordsTable) }
     }
 
-    override suspend fun insertBlob(blob: Blob): Unit =
-        dbQuery {
+    private fun validateColumns(blob: Blob) {
+        require(blob.id.value.length <= 64) { "blob id exceeds 64 chars: ${blob.id.value.length}" }
+        require(blob.key.length <= 512) { "storage key exceeds 512 chars: ${blob.key.length}" }
+        require(blob.contentType.length <= 255) { "contentType exceeds 255 chars: ${blob.contentType.length}" }
+        require(blob.checksum.length <= 128) { "checksum exceeds 128 chars: ${blob.checksum.length}" }
+        require(blob.serviceName.length <= 64) { "serviceName exceeds 64 chars: ${blob.serviceName.length}" }
+    }
+
+    override suspend fun insertBlob(blob: Blob) {
+        validateColumns(blob)
+        return dbQuery {
             BlobsTable.insert {
                 it[id] = blob.id.value
                 it[key] = blob.key
@@ -45,6 +54,7 @@ public class ExposedMetadataStore(
             }
             Unit
         }
+    }
 
     override suspend fun findBlob(id: BlobId): Blob? =
         dbQuery {
@@ -147,8 +157,9 @@ public class ExposedMetadataStore(
         originBlobId: BlobId,
         variationDigest: String,
         variant: Blob,
-    ): Unit =
-        dbQuery {
+    ) {
+        validateColumns(variant)
+        return dbQuery {
             BlobsTable.insert {
                 it[id] = variant.id.value
                 it[key] = variant.key
@@ -166,6 +177,7 @@ public class ExposedMetadataStore(
             }
             Unit
         }
+    }
 
     override suspend fun findVariantsOf(originBlobId: BlobId): List<Blob> =
         dbQuery {

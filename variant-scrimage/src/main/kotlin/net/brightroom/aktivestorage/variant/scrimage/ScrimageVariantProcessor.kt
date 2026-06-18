@@ -23,8 +23,11 @@ public class ScrimageVariantProcessor : VariantProcessor {
         source: ContentSource,
         variation: Variation,
     ): ContentSource =
-        withContext(Dispatchers.IO) {
-            val bytes = source.open().buffered().use { it.readByteArray() }
+        withContext(Dispatchers.Default) {
+            val bytes =
+                withContext(Dispatchers.IO) {
+                    source.open().buffered().use { it.readByteArray() }
+                }
             var image = ImmutableImage.loader().fromBytes(bytes)
 
             var targetFormat = formatOf(source.contentType)

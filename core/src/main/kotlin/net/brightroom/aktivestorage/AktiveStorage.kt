@@ -1,5 +1,7 @@
 package net.brightroom.aktivestorage
 
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.withContext
 import kotlinx.io.buffered
 import kotlinx.io.readByteArray
 import kotlin.io.encoding.Base64
@@ -45,7 +47,7 @@ public class AktiveStorage(
             try {
                 service.put(key, spooled, ObjectMetadata(blob.contentType, blob.byteSize, blob.checksum))
             } catch (e: Exception) {
-                metadata.deleteBlob(blob.id)
+                withContext(NonCancellable) { metadata.deleteBlob(blob.id) }
                 throw e
             }
             val attachment =
