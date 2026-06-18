@@ -52,4 +52,17 @@ class DeliveryTest {
             val st = sut(InMemoryStorageService(), InMemoryMetadataStore())
             assertNull(st.resolveForDelivery("garbage"))
         }
+
+    @Test
+    fun `resolveForDelivery returns null for a blob owned by another service`() =
+        runTest {
+            val s = InMemoryStorageService(name = "s3", presignSupported = true)
+            val m = InMemoryMetadataStore()
+            val st = sut(s, m)
+            val att = st.attach(record, "avatar", ContentSource.ofBytes("a.png", "image/png", "x".encodeToByteArray()))
+            val blob = st.blobOf(att)!!
+            m.blobs[blob.id.value] = blob.copy(serviceName = "other")
+            val token = st.signedReference(blob, 5.minutes)
+            assertNull(st.resolveForDelivery(token))
+        }
 }

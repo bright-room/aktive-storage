@@ -94,7 +94,7 @@ public class AktiveStorage(
         val processor =
             variantProcessor
                 ?: error("variant() requires a VariantProcessor; none was injected")
-        check(blob.serviceName == service.name) {
+        check(owns(blob)) {
             "variant() must run on the owning service: blob=${blob.serviceName}, current=${service.name}"
         }
         val digest = digestOf(variation)
@@ -146,7 +146,7 @@ public class AktiveStorage(
         if (!purgeBlob) return
         if (metadata.countAttachmentsForBlob(attachment.blobId) > 0) return
         val blob = metadata.findBlob(attachment.blobId) ?: return
-        if (blob.serviceName != service.name) return
+        if (!owns(blob)) return
         purgeVariantsOf(blob)
         service.delete(blob.key)
         metadata.deleteBlob(blob.id)
@@ -164,7 +164,7 @@ public class AktiveStorage(
         val orphans = metadata.findUnattachedBlobs(olderThan)
         var reclaimed = 0
         for (blob in orphans) {
-            if (blob.serviceName != service.name) continue
+            if (!owns(blob)) continue
             purgeVariantsOf(blob)
             service.delete(blob.key)
             metadata.deleteBlob(blob.id)
@@ -196,9 +196,12 @@ public class AktiveStorage(
     ): Delivery? {
         val blobId = signer.verify(token) ?: return null
         val blob = metadata.findBlob(blobId) ?: return null
+        if (!owns(blob)) return null
         val url = service.presignedGetUrl(blob.key, redirectTtl)
         return if (url != null) Delivery.Redirect(url) else Delivery.Proxy(blob, service.get(blob.key))
     }
+
+    private fun owns(blob: Blob): Boolean = blob.serviceName == service.name
 
     /** 元 Blob に紐づく派生の実体を消し、variant 記録と派生 Blob 行を削除する。 */
     private suspend fun purgeVariantsOf(origin: Blob) {
