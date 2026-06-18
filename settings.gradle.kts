@@ -23,6 +23,7 @@ include("core")
 include("storage-fs")
 include("storage-s3")
 include("metadata-exposed-jdbc")
+include("variant-scrimage")
 include("integration-tests")
 include("bom")
 

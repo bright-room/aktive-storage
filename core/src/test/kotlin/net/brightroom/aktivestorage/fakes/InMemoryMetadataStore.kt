@@ -12,6 +12,14 @@ class InMemoryMetadataStore : MetadataStore {
     val blobs = mutableMapOf<String, Blob>()
     val attachments = mutableMapOf<String, Attachment>()
 
+    // key = "originId|digest" -> variantBlobId
+    val variants = mutableMapOf<String, String>()
+
+    private fun variantKey(
+        originId: String,
+        digest: String,
+    ) = "$originId|$digest"
+
     override suspend fun insertBlob(blob: Blob) {
         blobs[blob.id.value] = blob
     }
@@ -37,10 +45,44 @@ class InMemoryMetadataStore : MetadataStore {
 
     override suspend fun countAttachmentsForBlob(blobId: BlobId): Int = attachments.values.count { it.blobId == blobId }
 
-    override suspend fun findUnattachedBlobs(olderThan: Instant): List<Blob> =
-        blobs.values.filter { blob ->
-            blob.createdAt < olderThan && attachments.values.none { it.blobId == blob.id }
+    override suspend fun findUnattachedBlobs(olderThan: Instant): List<Blob> {
+        val variantBlobIds = variants.values.toSet()
+        return blobs.values.filter { blob ->
+            blob.createdAt < olderThan &&
+                attachments.values.none { it.blobId == blob.id } &&
+                blob.id.value !in variantBlobIds
         }
+    }
 
     override suspend fun findAttachmentsForRecord(record: RecordRef): List<Attachment> = attachments.values.filter { it.record == record }
+
+    override suspend fun findVariant(
+        originBlobId: BlobId,
+        variationDigest: String,
+    ): Blob? = variants[variantKey(originBlobId.value, variationDigest)]?.let { blobs[it] }
+
+    override suspend fun insertVariant(
+        originBlobId: BlobId,
+        variationDigest: String,
+        variant: Blob,
+    ) {
+        blobs[variant.id.value] = variant
+        variants[variantKey(originBlobId.value, variationDigest)] = variant.id.value
+    }
+
+    override suspend fun findVariantsOf(originBlobId: BlobId): List<Blob> {
+        val prefix = "${originBlobId.value}|"
+        return variants.entries
+            .filter { it.key.startsWith(prefix) }
+            .mapNotNull { blobs[it.value] }
+    }
+
+    override suspend fun deleteVariantsOf(originBlobId: BlobId) {
+        val prefix = "${originBlobId.value}|"
+        val matching = variants.entries.filter { it.key.startsWith(prefix) }
+        for (e in matching) {
+            blobs.remove(e.value)
+            variants.remove(e.key)
+        }
+    }
 }

@@ -17,7 +17,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.testcontainers.containers.PostgreSQLContainer
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 import kotlin.time.Instant
 
 @Tag("integration")
@@ -51,6 +53,7 @@ class ExposedMetadataStoreIT {
     @BeforeEach
     fun clean() {
         transaction(db) {
+            VariantRecordsTable.deleteAll()
             AttachmentsTable.deleteAll()
             BlobsTable.deleteAll()
         }
@@ -136,5 +139,41 @@ class ExposedMetadataStoreIT {
             val names = store.findAttachmentsForRecord(target).map { it.name }.toSet()
 
             assertEquals(setOf("avatar", "cover"), names)
+        }
+
+    @Test
+    fun `insert and find variant`() =
+        runBlocking {
+            store.insertBlob(blob("origin", "ko"))
+            store.insertVariant(BlobId("origin"), "digestA", blob("variant", "kv"))
+
+            assertEquals(BlobId("variant"), store.findVariant(BlobId("origin"), "digestA")?.id)
+            assertNull(store.findVariant(BlobId("origin"), "digestB"))
+            assertEquals(listOf(BlobId("variant")), store.findVariantsOf(BlobId("origin")).map { it.id })
+        }
+
+    @Test
+    fun `unattached sweep excludes variant blobs`() =
+        runBlocking {
+            store.insertBlob(blob("origin", "ko"))
+            store.insertVariant(BlobId("origin"), "digestA", blob("variant", "kv"))
+
+            val orphans = store.findUnattachedBlobs(Instant.fromEpochMilliseconds(1000)).map { it.id.value }.toSet()
+            // origin (createdAt=0, no attachment) は孤立として出るが variant は除外される
+            assertTrue("origin" in orphans)
+            assertFalse("variant" in orphans)
+        }
+
+    @Test
+    fun `deleteVariantsOf removes records and variant blob rows`() =
+        runBlocking {
+            store.insertBlob(blob("origin", "ko"))
+            store.insertVariant(BlobId("origin"), "digestA", blob("variant", "kv"))
+
+            store.deleteVariantsOf(BlobId("origin"))
+
+            assertNull(store.findVariant(BlobId("origin"), "digestA"))
+            assertNull(store.findBlob(BlobId("variant")))
+            assertTrue(store.findVariantsOf(BlobId("origin")).isEmpty())
         }
 }

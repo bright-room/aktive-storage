@@ -1,6 +1,6 @@
 public final class net/brightroom/aktivestorage/AktiveStorage {
-	public fun <init> (Lnet/brightroom/aktivestorage/StorageService;Lnet/brightroom/aktivestorage/MetadataStore;Lnet/brightroom/aktivestorage/ReferenceSigner;Lnet/brightroom/aktivestorage/KeyGenerator;Lnet/brightroom/aktivestorage/Checksum;Lkotlin/time/Clock;)V
-	public synthetic fun <init> (Lnet/brightroom/aktivestorage/StorageService;Lnet/brightroom/aktivestorage/MetadataStore;Lnet/brightroom/aktivestorage/ReferenceSigner;Lnet/brightroom/aktivestorage/KeyGenerator;Lnet/brightroom/aktivestorage/Checksum;Lkotlin/time/Clock;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lnet/brightroom/aktivestorage/StorageService;Lnet/brightroom/aktivestorage/MetadataStore;Lnet/brightroom/aktivestorage/ReferenceSigner;Lnet/brightroom/aktivestorage/KeyGenerator;Lnet/brightroom/aktivestorage/Checksum;Lnet/brightroom/aktivestorage/VariantProcessor;Lkotlin/time/Clock;)V
+	public synthetic fun <init> (Lnet/brightroom/aktivestorage/StorageService;Lnet/brightroom/aktivestorage/MetadataStore;Lnet/brightroom/aktivestorage/ReferenceSigner;Lnet/brightroom/aktivestorage/KeyGenerator;Lnet/brightroom/aktivestorage/Checksum;Lnet/brightroom/aktivestorage/VariantProcessor;Lkotlin/time/Clock;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun attach (Lnet/brightroom/aktivestorage/RecordRef;Ljava/lang/String;Lnet/brightroom/aktivestorage/ContentSource;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun attachments (Lnet/brightroom/aktivestorage/RecordRef;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun blobOf (Lnet/brightroom/aktivestorage/Attachment;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -11,6 +11,7 @@ public final class net/brightroom/aktivestorage/AktiveStorage {
 	public final fun resolveForDelivery-8Mi8wO0 (Ljava/lang/String;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun resolveForDelivery-8Mi8wO0$default (Lnet/brightroom/aktivestorage/AktiveStorage;Ljava/lang/String;JLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public final fun signedReference-HG0u8IE (Lnet/brightroom/aktivestorage/Blob;J)Ljava/lang/String;
+	public final fun variant (Lnet/brightroom/aktivestorage/Blob;Lnet/brightroom/aktivestorage/Variation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class net/brightroom/aktivestorage/Attachment {
@@ -127,6 +128,17 @@ public final class net/brightroom/aktivestorage/Delivery$Redirect : net/brightro
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class net/brightroom/aktivestorage/Gravity : java/lang/Enum {
+	public static final field CENTER Lnet/brightroom/aktivestorage/Gravity;
+	public static final field EAST Lnet/brightroom/aktivestorage/Gravity;
+	public static final field NORTH Lnet/brightroom/aktivestorage/Gravity;
+	public static final field SOUTH Lnet/brightroom/aktivestorage/Gravity;
+	public static final field WEST Lnet/brightroom/aktivestorage/Gravity;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lnet/brightroom/aktivestorage/Gravity;
+	public static fun values ()[Lnet/brightroom/aktivestorage/Gravity;
+}
+
 public abstract interface class net/brightroom/aktivestorage/Hasher {
 	public abstract fun digest ()[B
 	public abstract fun update ([BII)V
@@ -143,6 +155,15 @@ public final class net/brightroom/aktivestorage/HmacReferenceSigner : net/bright
 	public synthetic fun <init> ([BLkotlin/time/Clock;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun sign-K4yIXZU (Ljava/lang/String;Lkotlin/time/Instant;)Ljava/lang/String;
 	public fun verify--LBQjFs (Ljava/lang/String;)Ljava/lang/String;
+}
+
+public final class net/brightroom/aktivestorage/ImageFormat : java/lang/Enum {
+	public static final field JPEG Lnet/brightroom/aktivestorage/ImageFormat;
+	public static final field PNG Lnet/brightroom/aktivestorage/ImageFormat;
+	public static final field WEBP Lnet/brightroom/aktivestorage/ImageFormat;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lnet/brightroom/aktivestorage/ImageFormat;
+	public static fun values ()[Lnet/brightroom/aktivestorage/ImageFormat;
 }
 
 public final class net/brightroom/aktivestorage/KeyContext {
@@ -173,12 +194,16 @@ public abstract interface class net/brightroom/aktivestorage/MetadataStore {
 	public abstract fun countAttachmentsForBlob-K4yIXZU (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun deleteAttachment-wzXLxV0 (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun deleteBlob-K4yIXZU (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun deleteVariantsOf-K4yIXZU (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun findAttachments (Lnet/brightroom/aktivestorage/RecordRef;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun findAttachmentsForRecord (Lnet/brightroom/aktivestorage/RecordRef;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun findBlob-K4yIXZU (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun findUnattachedBlobs (Lkotlin/time/Instant;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun findVariant-fp3f6iE (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun findVariantsOf-K4yIXZU (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun insertAttachment (Lnet/brightroom/aktivestorage/Attachment;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun insertBlob (Lnet/brightroom/aktivestorage/Blob;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun insertVariant-d_QTsiE (Ljava/lang/String;Ljava/lang/String;Lnet/brightroom/aktivestorage/Blob;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class net/brightroom/aktivestorage/ObjectMetadata {
@@ -235,6 +260,15 @@ public abstract interface class net/brightroom/aktivestorage/ReferenceSigner {
 	public abstract fun verify--LBQjFs (Ljava/lang/String;)Ljava/lang/String;
 }
 
+public final class net/brightroom/aktivestorage/ResizeMode : java/lang/Enum {
+	public static final field FILL Lnet/brightroom/aktivestorage/ResizeMode;
+	public static final field FIT Lnet/brightroom/aktivestorage/ResizeMode;
+	public static final field LIMIT Lnet/brightroom/aktivestorage/ResizeMode;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lnet/brightroom/aktivestorage/ResizeMode;
+	public static fun values ()[Lnet/brightroom/aktivestorage/ResizeMode;
+}
+
 public abstract interface class net/brightroom/aktivestorage/StorageService {
 	public abstract fun delete (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun exists (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -242,5 +276,84 @@ public abstract interface class net/brightroom/aktivestorage/StorageService {
 	public abstract fun getName ()Ljava/lang/String;
 	public abstract fun presignedGetUrl-yJnnbbc (Ljava/lang/String;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun put (Ljava/lang/String;Lnet/brightroom/aktivestorage/ContentSource;Lnet/brightroom/aktivestorage/ObjectMetadata;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface class net/brightroom/aktivestorage/Transform {
+}
+
+public final class net/brightroom/aktivestorage/Transform$Convert : net/brightroom/aktivestorage/Transform {
+	public fun <init> (Lnet/brightroom/aktivestorage/ImageFormat;Ljava/lang/Integer;)V
+	public final fun component1 ()Lnet/brightroom/aktivestorage/ImageFormat;
+	public final fun component2 ()Ljava/lang/Integer;
+	public final fun copy (Lnet/brightroom/aktivestorage/ImageFormat;Ljava/lang/Integer;)Lnet/brightroom/aktivestorage/Transform$Convert;
+	public static synthetic fun copy$default (Lnet/brightroom/aktivestorage/Transform$Convert;Lnet/brightroom/aktivestorage/ImageFormat;Ljava/lang/Integer;ILjava/lang/Object;)Lnet/brightroom/aktivestorage/Transform$Convert;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getFormat ()Lnet/brightroom/aktivestorage/ImageFormat;
+	public final fun getQuality ()Ljava/lang/Integer;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class net/brightroom/aktivestorage/Transform$Crop : net/brightroom/aktivestorage/Transform {
+	public fun <init> (IILnet/brightroom/aktivestorage/Gravity;)V
+	public final fun component1 ()I
+	public final fun component2 ()I
+	public final fun component3 ()Lnet/brightroom/aktivestorage/Gravity;
+	public final fun copy (IILnet/brightroom/aktivestorage/Gravity;)Lnet/brightroom/aktivestorage/Transform$Crop;
+	public static synthetic fun copy$default (Lnet/brightroom/aktivestorage/Transform$Crop;IILnet/brightroom/aktivestorage/Gravity;ILjava/lang/Object;)Lnet/brightroom/aktivestorage/Transform$Crop;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getGravity ()Lnet/brightroom/aktivestorage/Gravity;
+	public final fun getHeight ()I
+	public final fun getWidth ()I
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class net/brightroom/aktivestorage/Transform$Grayscale : net/brightroom/aktivestorage/Transform {
+	public static final field INSTANCE Lnet/brightroom/aktivestorage/Transform$Grayscale;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class net/brightroom/aktivestorage/Transform$Resize : net/brightroom/aktivestorage/Transform {
+	public fun <init> (Ljava/lang/Integer;Ljava/lang/Integer;Lnet/brightroom/aktivestorage/ResizeMode;)V
+	public final fun component1 ()Ljava/lang/Integer;
+	public final fun component2 ()Ljava/lang/Integer;
+	public final fun component3 ()Lnet/brightroom/aktivestorage/ResizeMode;
+	public final fun copy (Ljava/lang/Integer;Ljava/lang/Integer;Lnet/brightroom/aktivestorage/ResizeMode;)Lnet/brightroom/aktivestorage/Transform$Resize;
+	public static synthetic fun copy$default (Lnet/brightroom/aktivestorage/Transform$Resize;Ljava/lang/Integer;Ljava/lang/Integer;Lnet/brightroom/aktivestorage/ResizeMode;ILjava/lang/Object;)Lnet/brightroom/aktivestorage/Transform$Resize;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getHeight ()Ljava/lang/Integer;
+	public final fun getMode ()Lnet/brightroom/aktivestorage/ResizeMode;
+	public final fun getWidth ()Ljava/lang/Integer;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class net/brightroom/aktivestorage/Transform$Rotate : net/brightroom/aktivestorage/Transform {
+	public fun <init> (I)V
+	public final fun component1 ()I
+	public final fun copy (I)Lnet/brightroom/aktivestorage/Transform$Rotate;
+	public static synthetic fun copy$default (Lnet/brightroom/aktivestorage/Transform$Rotate;IILjava/lang/Object;)Lnet/brightroom/aktivestorage/Transform$Rotate;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDegrees ()I
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class net/brightroom/aktivestorage/VariantProcessor {
+	public abstract fun process (Lnet/brightroom/aktivestorage/ContentSource;Lnet/brightroom/aktivestorage/Variation;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class net/brightroom/aktivestorage/Variation {
+	public static final field Companion Lnet/brightroom/aktivestorage/Variation$Companion;
+	public synthetic fun <init> (Ljava/util/List;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getCanonicalForm ()Ljava/lang/String;
+	public final fun getTransforms ()Ljava/util/List;
+}
+
+public final class net/brightroom/aktivestorage/Variation$Companion {
+	public final fun of ([Lnet/brightroom/aktivestorage/Transform;)Lnet/brightroom/aktivestorage/Variation;
 }
 
