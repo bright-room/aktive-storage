@@ -14,5 +14,6 @@ public final class net/brightroom/aktivestorage/metadata/exposed/ExposedMetadata
 	public fun insertAttachment (Lnet/brightroom/aktivestorage/Attachment;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun insertBlob (Lnet/brightroom/aktivestorage/Blob;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun insertVariant-d_QTsiE (Ljava/lang/String;Ljava/lang/String;Lnet/brightroom/aktivestorage/Blob;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun isVariantBlob-K4yIXZU (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
