@@ -6,6 +6,7 @@ import net.brightroom.aktivestorage.Attachment
 import net.brightroom.aktivestorage.AttachmentId
 import net.brightroom.aktivestorage.Blob
 import net.brightroom.aktivestorage.BlobId
+import net.brightroom.aktivestorage.DuplicateVariantException
 import net.brightroom.aktivestorage.MetadataStore
 import net.brightroom.aktivestorage.RecordRef
 import org.jetbrains.exposed.v1.core.JoinType
@@ -15,6 +16,7 @@ import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.core.isNull
 import org.jetbrains.exposed.v1.core.less
+import org.jetbrains.exposed.v1.exceptions.ExposedSQLException
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
@@ -159,23 +161,30 @@ public class ExposedMetadataStore(
         variant: Blob,
     ) {
         validateColumns(variant)
-        return dbQuery {
-            BlobsTable.insert {
-                it[id] = variant.id.value
-                it[key] = variant.key
-                it[filename] = variant.filename
-                it[contentType] = variant.contentType
-                it[byteSize] = variant.byteSize
-                it[checksum] = variant.checksum
-                it[serviceName] = variant.serviceName
-                it[createdAt] = variant.createdAt.toEpochMilliseconds()
+        try {
+            dbQuery {
+                BlobsTable.insert {
+                    it[id] = variant.id.value
+                    it[key] = variant.key
+                    it[filename] = variant.filename
+                    it[contentType] = variant.contentType
+                    it[byteSize] = variant.byteSize
+                    it[checksum] = variant.checksum
+                    it[serviceName] = variant.serviceName
+                    it[createdAt] = variant.createdAt.toEpochMilliseconds()
+                }
+                VariantRecordsTable.insert {
+                    it[VariantRecordsTable.originBlobId] = originBlobId.value
+                    it[VariantRecordsTable.variationDigest] = variationDigest
+                    it[variantBlobId] = variant.id.value
+                }
+                Unit
             }
-            VariantRecordsTable.insert {
-                it[VariantRecordsTable.originBlobId] = originBlobId.value
-                it[VariantRecordsTable.variationDigest] = variationDigest
-                it[variantBlobId] = variant.id.value
+        } catch (e: ExposedSQLException) {
+            if (e.sqlState?.startsWith("23") == true) {
+                throw DuplicateVariantException("variant ($originBlobId, $variationDigest) already exists", e)
             }
-            Unit
+            throw e
         }
     }
 
