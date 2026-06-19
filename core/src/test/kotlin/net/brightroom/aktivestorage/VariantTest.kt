@@ -21,7 +21,7 @@ class VariantTest {
     ) = AktiveStorage(
         service = service,
         metadata = metadata,
-        signer = HmacReferenceSigner("k".encodeToByteArray()),
+        signer = HmacReferenceSigner(ByteArray(32) { 1 }),
         variantProcessor = processor,
     )
 
@@ -135,7 +135,7 @@ class VariantTest {
                 AktiveStorage(
                     service = service,
                     metadata = racing,
-                    signer = HmacReferenceSigner("k".encodeToByteArray()),
+                    signer = HmacReferenceSigner(ByteArray(32) { 1 }),
                     variantProcessor = FakeVariantProcessor(),
                 )
 

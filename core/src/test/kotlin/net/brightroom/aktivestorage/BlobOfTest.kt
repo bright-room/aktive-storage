@@ -11,7 +11,7 @@ class BlobOfTest {
     fun `blobOf returns the blob for an attachment`() =
         runTest {
             val m = InMemoryMetadataStore()
-            val st = AktiveStorage(InMemoryStorageService(), m, HmacReferenceSigner("k".encodeToByteArray()))
+            val st = AktiveStorage(InMemoryStorageService(), m, HmacReferenceSigner(ByteArray(32) { 1 }))
             val att = st.attach(RecordRef("U", "1"), "avatar", ContentSource.ofBytes("a", "text/plain", "x".encodeToByteArray()))
             assertEquals(att.blobId, st.blobOf(att)!!.id)
         }

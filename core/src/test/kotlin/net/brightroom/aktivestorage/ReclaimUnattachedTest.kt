@@ -15,7 +15,7 @@ class ReclaimUnattachedTest {
     private fun sut(
         s: InMemoryStorageService,
         m: InMemoryMetadataStore,
-    ) = AktiveStorage(s, m, HmacReferenceSigner("k".encodeToByteArray()))
+    ) = AktiveStorage(s, m, HmacReferenceSigner(ByteArray(32) { 1 }))
 
     private fun blob(
         id: String,

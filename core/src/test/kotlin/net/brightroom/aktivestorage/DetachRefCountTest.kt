@@ -17,7 +17,7 @@ class DetachRefCountTest {
     private fun sut(
         s: InMemoryStorageService,
         m: InMemoryMetadataStore,
-    ) = AktiveStorage(s, m, HmacReferenceSigner("k".encodeToByteArray()))
+    ) = AktiveStorage(s, m, HmacReferenceSigner(ByteArray(32) { 1 }))
 
     @Test
     fun `detach keeps blob while another attachment still references it`() =

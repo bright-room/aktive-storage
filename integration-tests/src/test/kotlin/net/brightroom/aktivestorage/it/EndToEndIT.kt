@@ -58,7 +58,7 @@ class EndToEndIT {
                 AktiveStorage(
                     service = S3StorageService(client, "e2e"),
                     metadata = metadata,
-                    signer = HmacReferenceSigner("e2e-secret".encodeToByteArray()),
+                    signer = HmacReferenceSigner(ByteArray(32) { 7 }),
                 )
         }
     }

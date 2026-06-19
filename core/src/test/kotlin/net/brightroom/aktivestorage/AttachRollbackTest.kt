@@ -46,7 +46,7 @@ class AttachRollbackTest {
                 AktiveStorage(
                     service = FailingStorageService(),
                     metadata = metadata,
-                    signer = HmacReferenceSigner("k".encodeToByteArray()),
+                    signer = HmacReferenceSigner(ByteArray(32) { 1 }),
                 )
 
             assertFailsWith<IllegalStateException> {
