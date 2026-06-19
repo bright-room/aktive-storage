@@ -27,8 +27,6 @@ class InMemoryStorageService(
 
     override suspend fun get(key: String): RawSource = Buffer().also { it.write(objects.getValue(key)) }
 
-    override suspend fun exists(key: String): Boolean = objects.containsKey(key)
-
     override suspend fun delete(key: String) {
         objects.remove(key)
     }

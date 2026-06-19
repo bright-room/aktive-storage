@@ -49,13 +49,13 @@ class ReclaimUnattachedTest {
             val reclaimed = st.reclaimUnattached(Instant.fromEpochMilliseconds(1000))
 
             assertEquals(1, reclaimed)
-            assertFalse(s.exists("k-old"))
+            assertFalse(s.objects.containsKey("k-old"))
             assertNull(m.findBlob(BlobId("old")))
-            assertTrue(s.exists("k-new"))
+            assertTrue(s.objects.containsKey("k-new"))
             assertNotNull(m.findBlob(BlobId("new")))
-            assertTrue(s.exists("k-edge"))
+            assertTrue(s.objects.containsKey("k-edge"))
             assertNotNull(m.findBlob(BlobId("edge")))
-            assertTrue(s.exists("k-att"))
+            assertTrue(s.objects.containsKey("k-att"))
             assertNotNull(m.findBlob(BlobId("att")))
         }
 
@@ -78,6 +78,6 @@ class ReclaimUnattachedTest {
             assertEquals(1, reclaimed)
             assertNull(m.findBlob(BlobId("mine"))) // 自サービス分は回収
             assertNotNull(m.findBlob(BlobId("theirs"))) // 別サービス分は残る
-            assertTrue(s.exists("k-theirs"))
+            assertTrue(s.objects.containsKey("k-theirs"))
         }
 }

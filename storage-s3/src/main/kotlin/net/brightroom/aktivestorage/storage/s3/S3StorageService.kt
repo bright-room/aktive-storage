@@ -2,9 +2,7 @@ package net.brightroom.aktivestorage.storage.s3
 
 import aws.sdk.kotlin.services.s3.S3Client
 import aws.sdk.kotlin.services.s3.deleteObject
-import aws.sdk.kotlin.services.s3.headObject
 import aws.sdk.kotlin.services.s3.model.GetObjectRequest
-import aws.sdk.kotlin.services.s3.model.NotFound
 import aws.sdk.kotlin.services.s3.presigners.presignGetObject
 import aws.sdk.kotlin.services.s3.putObject
 import aws.smithy.kotlin.runtime.content.writeToFile
@@ -58,17 +56,6 @@ public class S3StorageService(
             throw e
         }
     }
-
-    override suspend fun exists(key: String): Boolean =
-        try {
-            client.headObject {
-                this.bucket = this@S3StorageService.bucket
-                this.key = key
-            }
-            true
-        } catch (_: NotFound) {
-            false
-        }
 
     override suspend fun delete(key: String) {
         client.deleteObject {

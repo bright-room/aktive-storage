@@ -277,7 +277,6 @@ public final class net/brightroom/aktivestorage/ResizeMode : java/lang/Enum {
 
 public abstract interface class net/brightroom/aktivestorage/StorageService {
 	public abstract fun delete (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public abstract fun exists (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun get (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun getName ()Ljava/lang/String;
 	public abstract fun presignedGetUrl-yJnnbbc (Ljava/lang/String;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;

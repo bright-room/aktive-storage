@@ -17,8 +17,6 @@ public interface StorageService {
     /** 実体を読み出す。返した [RawSource] は呼び出し側が close すること（S3 は temp ファイル裏付けで、close 時に削除する）。 */
     public suspend fun get(key: String): RawSource
 
-    public suspend fun exists(key: String): Boolean
-
     /** キーに対応する実体を削除する。存在しないキーに対しては no-op（冪等）。 */
     public suspend fun delete(key: String)
 

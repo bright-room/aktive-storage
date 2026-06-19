@@ -33,8 +33,8 @@ class PurgeRecordTest {
 
             assertEquals(0, st.attachments(record, "avatar").size)
             assertEquals(0, st.attachments(record, "documents").size)
-            assertFalse(s.exists(avatarKey))
-            assertFalse(s.exists(docKey))
+            assertFalse(s.objects.containsKey(avatarKey))
+            assertFalse(s.objects.containsKey(docKey))
             assertNull(m.findBlob(avatar.blobId))
             assertNull(m.findBlob(doc.blobId))
             // 別レコードは無傷
