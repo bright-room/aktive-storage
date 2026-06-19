@@ -1,3 +1,6 @@
+import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
+import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
+
 plugins {
     `maven-publish`
     signing
@@ -10,6 +13,12 @@ version = providers.gradleProperty("version").get()
 plugins.withId("org.jetbrains.kotlin.jvm") {
     extensions.configure<org.gradle.api.plugins.JavaPluginExtension> {
         withSourcesJar()
+    }
+    // public ABI 互換チェック。BCV（メンテナンスモード）から KGP 内蔵の ABI validation へ移行。
+    // 公開モジュールにのみ適用することで、旧 ignoredProjects（integration-tests / bom）の除外を再現する。
+    @OptIn(ExperimentalAbiValidation::class)
+    extensions.configure<KotlinJvmProjectExtension> {
+        abiValidation {}
     }
     apply(plugin = "org.jetbrains.dokka-javadoc")
     val javadocJar = tasks.register<Jar>("javadocJar") {
