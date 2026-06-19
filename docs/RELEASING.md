@@ -24,8 +24,8 @@ aktive-storage uses a **tag-driven, gated** release flow. Releases are the only 
 aktive-storage follows semantic versioning with pre-1.0 semantics:
 
 - `0.x` does not guarantee API stability. A minor bump (`0.MINOR.0`) may include breaking changes; a patch bump (`0.0.PATCH`) is backward-compatible fixes only. The public API stabilizes at `1.0`.
-- The public ABI is guarded in CI by [binary-compatibility-validator](https://github.com/Kotlin/binary-compatibility-validator) (`apiCheck`), which fails on **unintended** breaks.
-- For an **intentional** API change: run `./gradlew apiDump` to update the `api/*.api` baselines, commit them, and release a **minor** bump.
+- The public ABI is guarded in CI by the [Kotlin Gradle plugin's ABI validation](https://kotlinlang.org/docs/gradle-binary-compatibility-validation.html) (`checkKotlinAbi`), which fails on **unintended** breaks.
+- For an **intentional** API change: run `./gradlew updateKotlinAbi` to update the `api/*.api` baselines, commit them, and release a **minor** bump.
 
 The released version comes entirely from the tag (`-Pversion=<tag without the leading v>`). `gradle.properties` holds a neutral build default (`0.0.0`) used only for local builds.
 

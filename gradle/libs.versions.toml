@@ -10,7 +10,6 @@ postgresql = "42.7.11"
 spotless = "8.6.0"
 ktlint = "1.8.0"
 dokka = "2.2.0"
-binary-compatibility-validator = "0.18.1"
 scrimage = "4.6.4"
 
 [libraries]
@@ -34,6 +33,3 @@ testcontainers-junit = { module = "org.testcontainers:testcontainers-junit-jupit
 testcontainers-postgresql = { module = "org.testcontainers:testcontainers-postgresql", version.ref = "testcontainers" }
 testcontainers-minio = { module = "org.testcontainers:testcontainers-minio", version.ref = "testcontainers" }
 postgresql-driver = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
-
-[plugins]
-binary-compatibility-validator = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version.ref = "binary-compatibility-validator" }

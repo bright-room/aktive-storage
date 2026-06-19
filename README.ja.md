@@ -90,7 +90,7 @@ fun main() = runBlocking {
 aktive-storage は semantic versioning に従い、1.0 未満は以下の意味論とする:
 
 - **`0.x` は API の安定性を保証しない。** minor 上げ（`0.MINOR.0`）は破壊的変更を含みうる。patch 上げ（`0.0.PATCH`）は後方互換のバグ修正のみ。public API は `1.0` で安定する。
-- public ABI は CI 上で [binary-compatibility-validator](https://github.com/Kotlin/binary-compatibility-validator) により守られ、**意図しない**破壊を検出する。意図的な変更は `api/*.api` ダンプを再生成（`./gradlew apiDump`）し、minor を上げる。
+- public ABI は CI 上で [Kotlin Gradle plugin の ABI validation](https://kotlinlang.org/docs/gradle-binary-compatibility-validation.html) により守られ、**意図しない**破壊を検出する。意図的な変更は `api/*.api` ダンプを再生成（`./gradlew updateKotlinAbi`）し、minor を上げる。
 
 リリースはタグ Push で Maven Central に公開される（手順は [Releasing](docs/RELEASING.md)）。
 
