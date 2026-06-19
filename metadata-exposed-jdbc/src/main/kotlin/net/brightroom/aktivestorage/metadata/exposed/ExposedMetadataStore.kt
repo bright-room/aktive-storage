@@ -188,6 +188,15 @@ public class ExposedMetadataStore(
                 .map { it.toBlob() }
         }
 
+    override suspend fun isVariantBlob(blobId: BlobId): Boolean =
+        dbQuery {
+            VariantRecordsTable
+                .selectAll()
+                .where { VariantRecordsTable.variantBlobId eq blobId.value }
+                .limit(1)
+                .any()
+        }
+
     override suspend fun deleteVariantsOf(originBlobId: BlobId): Unit =
         dbQuery {
             val variantIds =

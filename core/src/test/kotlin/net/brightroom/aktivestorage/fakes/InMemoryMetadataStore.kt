@@ -85,4 +85,6 @@ class InMemoryMetadataStore : MetadataStore {
             variants.remove(e.key)
         }
     }
+
+    override suspend fun isVariantBlob(blobId: BlobId): Boolean = blobId.value in variants.values
 }

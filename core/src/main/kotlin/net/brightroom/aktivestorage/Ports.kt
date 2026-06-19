@@ -61,7 +61,7 @@ public interface MetadataStore {
         variationDigest: String,
     ): Blob?
 
-    /** 派生 Blob 行と variant 記録を 1 トランザクションで挿入する。 */
+    /** 派生 Blob 行と variant 記録を 1 トランザクションで挿入する。一意制約違反時は [DuplicateVariantException] を投げること。 */
     public suspend fun insertVariant(
         originBlobId: BlobId,
         variationDigest: String,
@@ -73,6 +73,9 @@ public interface MetadataStore {
 
     /** ある元 Blob の variant 記録と派生 Blob 行をまとめて削除する（実体削除は呼び出し側）。 */
     public suspend fun deleteVariantsOf(originBlobId: BlobId)
+
+    /** blobId が派生（いずれかの variant 記録の variantBlobId）なら true。variant-of-variant 禁止の判定に使う。 */
+    public suspend fun isVariantBlob(blobId: BlobId): Boolean
 }
 
 /** ストレージキー生成ストラテジ。 */

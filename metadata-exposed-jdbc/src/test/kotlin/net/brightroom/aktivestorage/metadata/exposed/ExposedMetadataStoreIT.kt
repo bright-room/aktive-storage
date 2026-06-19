@@ -217,6 +217,17 @@ class ExposedMetadataStoreIT {
     }
 
     @Test
+    fun `isVariantBlob distinguishes origins from variants`() =
+        runBlocking {
+            val origin = sampleBlob()
+            val variant = sampleBlob()
+            store.insertBlob(origin)
+            store.insertVariant(origin.id, "digest1", variant)
+            assertTrue(store.isVariantBlob(variant.id))
+            assertFalse(store.isVariantBlob(origin.id))
+        }
+
+    @Test
     fun `insertVariant rejects an over-length key with a clear error`() {
         val origin = sampleBlob()
         runBlocking { store.insertBlob(origin) }
