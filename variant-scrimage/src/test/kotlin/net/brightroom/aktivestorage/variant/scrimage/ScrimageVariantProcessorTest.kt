@@ -68,4 +68,13 @@ class ScrimageVariantProcessorTest {
             assertEquals(60, img.width)
             assertEquals(40, img.height)
         }
+
+    @Test
+    fun `resize with only width derives height from aspect ratio`() =
+        runTest {
+            val out = processor.process(source(samplePng()), Variation.of(Transform.Resize(120, null, ResizeMode.FIT)))
+            val img = decode(out)
+            assertEquals(120, img.width)
+            assertEquals(80, img.height) // 60x40 -> 120x80 (aspect preserved)
+        }
 }

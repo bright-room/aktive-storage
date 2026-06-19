@@ -5,6 +5,7 @@ import net.brightroom.aktivestorage.Attachment
 import net.brightroom.aktivestorage.AttachmentId
 import net.brightroom.aktivestorage.Blob
 import net.brightroom.aktivestorage.BlobId
+import net.brightroom.aktivestorage.DuplicateVariantException
 import net.brightroom.aktivestorage.RecordRef
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.deleteAll
@@ -217,6 +218,17 @@ class ExposedMetadataStoreIT {
     }
 
     @Test
+    fun `isVariantBlob distinguishes origins from variants`() =
+        runBlocking {
+            val origin = sampleBlob()
+            val variant = sampleBlob()
+            store.insertBlob(origin)
+            store.insertVariant(origin.id, "digest1", variant)
+            assertTrue(store.isVariantBlob(variant.id))
+            assertFalse(store.isVariantBlob(origin.id))
+        }
+
+    @Test
     fun `insertVariant rejects an over-length key with a clear error`() {
         val origin = sampleBlob()
         runBlocking { store.insertBlob(origin) }
@@ -231,5 +243,17 @@ class ExposedMetadataStoreIT {
                 }
             }
         assertTrue(ex.message!!.contains("key"))
+    }
+
+    @Test
+    fun `insertVariant throws DuplicateVariantException on duplicate (origin, digest)`() {
+        runBlocking {
+            val origin = sampleBlob()
+            store.insertBlob(origin)
+            store.insertVariant(origin.id, "d", sampleBlob())
+            assertFailsWith<DuplicateVariantException> {
+                store.insertVariant(origin.id, "d", sampleBlob())
+            }
+        }
     }
 }

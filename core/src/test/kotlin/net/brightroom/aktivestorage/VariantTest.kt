@@ -125,7 +125,7 @@ class VariantTest {
                     ) {
                         // 競合相手の記録を先に入れてから、自分の挿入は失敗させる。
                         metadata.insertVariant(originBlobId, variationDigest, variant.copy(id = BlobId("winner")))
-                        throw IllegalStateException("duplicate key")
+                        throw DuplicateVariantException("duplicate key")
                     }
                 }
             val sut = storage(service, metadata)
@@ -142,5 +142,52 @@ class VariantTest {
             val v = racingSut.variant(origin, Variation.of(Transform.Grayscale))
 
             assertEquals(BlobId("winner"), v.id)
+        }
+
+    @Test
+    fun `variant of a variant is rejected`() =
+        runTest {
+            val service = InMemoryStorageService()
+            val metadata = InMemoryMetadataStore()
+            val sut = storage(service, metadata)
+            val origin = attachImage(sut)
+            val v = sut.variant(origin, Variation.of(Transform.Grayscale))
+            assertFailsWith<IllegalArgumentException> { sut.variant(v, Variation.of(Transform.Grayscale)) }
+        }
+
+    @Test
+    fun `variant rejects an origin larger than the limit before downloading`() =
+        runTest {
+            val service = InMemoryStorageService()
+            val metadata = InMemoryMetadataStore()
+            val sut =
+                AktiveStorage(
+                    service = service,
+                    metadata = metadata,
+                    signer = HmacReferenceSigner(ByteArray(32) { 1 }),
+                    variantProcessor = FakeVariantProcessor(),
+                    maxVariantSourceBytes = 2,
+                )
+            val origin = attachImage(sut) // "PNG" = 3 bytes > 2
+            assertFailsWith<VariantSourceTooLargeException> { sut.variant(origin, Variation.of(Transform.Grayscale)) }
+        }
+
+    @Test
+    fun `variant deletes the stored object when insertVariant fails for a non-duplicate reason`() =
+        runTest {
+            val service = InMemoryStorageService()
+            val backing = InMemoryMetadataStore()
+            val metadata =
+                object : MetadataStore by backing {
+                    override suspend fun insertVariant(
+                        originBlobId: BlobId,
+                        variationDigest: String,
+                        variant: Blob,
+                    ): Unit = throw IllegalStateException("db down")
+                }
+            val sut = AktiveStorage(service, metadata, HmacReferenceSigner(ByteArray(32) { 1 }), variantProcessor = FakeVariantProcessor())
+            val origin = attachImage(sut)
+            assertFailsWith<IllegalStateException> { sut.variant(origin, Variation.of(Transform.Grayscale)) }
+            assertTrue(service.objects.keys.none { it.startsWith("${origin.key}/variants/") })
         }
 }

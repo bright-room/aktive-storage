@@ -57,4 +57,14 @@ class VariationTest {
         val v = Variation.of(Transform.Resize(200, null, ResizeMode.LIMIT), Transform.Convert(ImageFormat.WEBP, null))
         assertEquals("resize:200x_:LIMIT|convert:WEBP:q_", v.canonicalForm)
     }
+
+    @Test
+    fun `Rotate rejects non-right-angle degrees`() {
+        assertFailsWith<IllegalArgumentException> { Transform.Rotate(45) }
+    }
+
+    @Test
+    fun `Rotate accepts right angles and zero`() {
+        listOf(0, 90, 180, 270, -90, 360).forEach { Transform.Rotate(it) }
+    }
 }
