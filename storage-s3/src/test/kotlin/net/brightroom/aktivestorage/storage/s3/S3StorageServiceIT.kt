@@ -18,8 +18,7 @@ import org.junit.jupiter.api.TestInstance
 import org.testcontainers.containers.MinIOContainer
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
+import kotlin.test.assertFailsWith
 import kotlin.time.Duration.Companion.minutes
 
 @Tag("integration")
@@ -58,15 +57,14 @@ class S3StorageServiceIT {
     private fun meta(b: String) = ObjectMetadata("text/plain", b.length.toLong(), "chk")
 
     @Test
-    fun `put get exists delete round-trip`() =
+    fun `put get delete round-trip`() =
         runBlocking {
             val s = service()
             s.put("k1", ContentSource.ofBytes("f", "text/plain", "hello".encodeToByteArray()), meta("hello"))
-            assertTrue(s.exists("k1"))
             val bytes = s.get("k1").buffered().use { it.readByteArray() }
             assertContentEquals("hello".encodeToByteArray(), bytes)
             s.delete("k1")
-            assertFalse(s.exists("k1"))
+            assertFailsWith<Exception> { s.get("k1") }
         }
 
     @Test

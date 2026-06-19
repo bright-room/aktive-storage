@@ -40,8 +40,6 @@ public class FilesystemStorageService(
 
     override suspend fun get(key: String): RawSource = withContext(Dispatchers.IO) { SystemFileSystem.source(resolveSafe(key)) }
 
-    override suspend fun exists(key: String): Boolean = withContext(Dispatchers.IO) { SystemFileSystem.exists(resolveSafe(key)) }
-
     override suspend fun delete(key: String): Unit =
         withContext(Dispatchers.IO) { SystemFileSystem.delete(resolveSafe(key), mustExist = false) }
 

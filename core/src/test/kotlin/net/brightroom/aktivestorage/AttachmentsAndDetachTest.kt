@@ -42,7 +42,7 @@ class AttachmentsAndDetachTest {
 
             assertEquals(0, m.attachments.size)
             assertNull(m.findBlob(att.blobId))
-            assertFalse(s.exists(blob.key))
+            assertFalse(s.objects.containsKey(blob.key))
         }
 
     @Test
@@ -58,6 +58,6 @@ class AttachmentsAndDetachTest {
 
             assertEquals(0, m.attachments.size)
             assertNotNull(m.findBlob(att.blobId))
-            assertTrue(s.exists(blob.key))
+            assertTrue(s.objects.containsKey(blob.key))
         }
 }

@@ -33,7 +33,7 @@ class DetachRefCountTest {
             st.detach(att1, purgeBlob = true)
 
             assertNotNull(m.findBlob(blob.id))
-            assertTrue(s.exists(blob.key))
+            assertTrue(s.objects.containsKey(blob.key))
         }
 
     @Test
@@ -54,7 +54,7 @@ class DetachRefCountTest {
             // 関連は外れるが、他サービス所有の Blob 行・実体は残る
             assertEquals(0, m.attachments.size)
             assertNotNull(m.findBlob(blob.id))
-            assertTrue(s.exists("k-foreign"))
+            assertTrue(s.objects.containsKey("k-foreign"))
         }
 
     @Test
@@ -72,6 +72,6 @@ class DetachRefCountTest {
             st.detach(att2, purgeBlob = true)
 
             assertNull(m.findBlob(blob.id))
-            assertFalse(s.exists(blob.key))
+            assertFalse(s.objects.containsKey(blob.key))
         }
 }

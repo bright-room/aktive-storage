@@ -2,7 +2,6 @@ public final class net/brightroom/aktivestorage/storage/fs/FilesystemStorageServ
 	public fun <init> (Lkotlinx/io/files/Path;Ljava/lang/String;)V
 	public synthetic fun <init> (Lkotlinx/io/files/Path;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun delete (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public fun exists (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun get (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun getName ()Ljava/lang/String;
 	public fun presignedGetUrl-yJnnbbc (Ljava/lang/String;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;

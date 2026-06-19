@@ -28,8 +28,6 @@ class AttachRollbackTest {
 
         override suspend fun get(key: String): RawSource = throw UnsupportedOperationException()
 
-        override suspend fun exists(key: String): Boolean = false
-
         override suspend fun delete(key: String) = Unit
 
         override suspend fun presignedGetUrl(
@@ -90,8 +88,6 @@ class AttachRollbackTest {
                     }
 
                     override suspend fun get(key: String): RawSource = throw UnsupportedOperationException()
-
-                    override suspend fun exists(key: String): Boolean = false
 
                     override suspend fun delete(key: String) = Unit
 
