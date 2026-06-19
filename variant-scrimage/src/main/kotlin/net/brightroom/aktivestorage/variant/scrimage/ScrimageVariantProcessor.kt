@@ -16,6 +16,7 @@ import net.brightroom.aktivestorage.ResizeMode
 import net.brightroom.aktivestorage.Transform
 import net.brightroom.aktivestorage.VariantProcessor
 import net.brightroom.aktivestorage.Variation
+import kotlin.math.roundToInt
 
 /** Scrimage を用いた [VariantProcessor] 実装。画像全体をメモリ展開して変換する。 */
 public class ScrimageVariantProcessor : VariantProcessor {
@@ -67,8 +68,8 @@ public class ScrimageVariantProcessor : VariantProcessor {
         }
 
     private fun ImmutableImage.applyResize(resize: Transform.Resize): ImmutableImage {
-        val w = resize.width ?: width
-        val h = resize.height ?: height
+        val w = resize.width ?: ((resize.height!! * width.toDouble() / height).roundToInt()).coerceAtLeast(1)
+        val h = resize.height ?: ((resize.width!! * height.toDouble() / width).roundToInt()).coerceAtLeast(1)
         return when (resize.mode) {
             ResizeMode.FIT -> max(w, h)
             ResizeMode.LIMIT -> bound(w, h)
