@@ -50,7 +50,11 @@ public sealed interface Transform {
 
     public data class Rotate(
         val degrees: Int,
-    ) : Transform
+    ) : Transform {
+        init {
+            require(degrees % 90 == 0) { "Rotate degrees must be a multiple of 90, was $degrees" }
+        }
+    }
 
     public data object Grayscale : Transform
 
