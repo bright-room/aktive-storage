@@ -22,6 +22,7 @@ public class AktiveStorage(
     private val checksum: Checksum = Md5Checksum(),
     private val variantProcessor: VariantProcessor? = null,
     private val clock: Clock = Clock.System,
+    private val maxVariantSourceBytes: Long = 50L * 1024 * 1024,
 ) {
     /** 添付を作成する。順序: スプール→Blob行→実体put→Attachment行。 */
     public suspend fun attach(
@@ -32,17 +33,7 @@ public class AktiveStorage(
         val spooled = spool(content, checksum)
         try {
             val key = keyGenerator.generate(KeyContext(spooled.filename, spooled.contentType, record))
-            val blob =
-                Blob(
-                    id = BlobId(Uuid.random().toString()),
-                    key = key,
-                    filename = spooled.filename,
-                    contentType = spooled.contentType,
-                    byteSize = spooled.byteSize,
-                    checksum = spooled.checksumBase64,
-                    serviceName = service.name,
-                    createdAt = clock.now(),
-                )
+            val blob = newBlob(key, spooled.filename, spooled)
             metadata.insertBlob(blob)
             try {
                 service.put(key, spooled, ObjectMetadata(blob.contentType, blob.byteSize, blob.checksum))
@@ -97,8 +88,13 @@ public class AktiveStorage(
         check(owns(blob)) {
             "variant() must run on the owning service: blob=${blob.serviceName}, current=${service.name}"
         }
+
         val digest = digestOf(variation)
         metadata.findVariant(blob.id, digest)?.let { return it }
+
+        // cache miss → validate preconditions before the expensive download/generate
+        require(!metadata.isVariantBlob(blob.id)) { "variant() origin must not itself be a variant: ${blob.id.value}" }
+        if (blob.byteSize > maxVariantSourceBytes) throw VariantSourceTooLargeException(blob.byteSize, maxVariantSourceBytes)
 
         val originBytes = service.get(blob.key).buffered().use { it.readByteArray() }
         val origin = ContentSource.ofBytes(blob.filename, blob.contentType, originBytes)
@@ -107,24 +103,18 @@ public class AktiveStorage(
         val spooled = spool(processed, checksum)
         try {
             val key = "${blob.key}/variants/$digest"
-            val variantBlob =
-                Blob(
-                    id = BlobId(Uuid.random().toString()),
-                    key = key,
-                    filename = spooled.filename,
-                    contentType = spooled.contentType,
-                    byteSize = spooled.byteSize,
-                    checksum = spooled.checksumBase64,
-                    serviceName = service.name,
-                    createdAt = clock.now(),
-                )
+            val variantBlob = newBlob(key, spooled.filename, spooled)
             service.put(key, spooled, ObjectMetadata(variantBlob.contentType, variantBlob.byteSize, variantBlob.checksum))
             return try {
                 metadata.insertVariant(blob.id, digest, variantBlob)
                 variantBlob
-            } catch (e: Exception) {
-                // 並行初回生成の競合: 既に記録された派生があればそれを返して収束する。
+            } catch (e: DuplicateVariantException) {
+                // 並行初回生成の競合: 既存の派生を返して収束する。
                 metadata.findVariant(blob.id, digest) ?: throw e
+            } catch (e: Exception) {
+                // 真の失敗: put 済み実体を補償削除（キャンセルでも実行）してから再throw。
+                withContext(NonCancellable) { service.delete(key) }
+                throw e
             }
         } finally {
             spooled.cleanup()
@@ -200,6 +190,22 @@ public class AktiveStorage(
         val url = service.presignedGetUrl(blob.key, redirectTtl)
         return if (url != null) Delivery.Redirect(url) else Delivery.Proxy(blob, service.get(blob.key))
     }
+
+    private fun newBlob(
+        key: String,
+        filename: String,
+        spooled: SpooledContent,
+    ): Blob =
+        Blob(
+            id = BlobId(Uuid.random().toString()),
+            key = key,
+            filename = filename,
+            contentType = spooled.contentType,
+            byteSize = spooled.byteSize,
+            checksum = spooled.checksumBase64,
+            serviceName = service.name,
+            createdAt = clock.now(),
+        )
 
     private fun owns(blob: Blob): Boolean = blob.serviceName == service.name
 
